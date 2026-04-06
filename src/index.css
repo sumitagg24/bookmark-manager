@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  }
+
+  body {
+    @apply bg-premium-canvas text-slate-900 antialiased;
+    @apply dark:bg-[#0c1218] dark:text-slate-100;
+  }
+}
+
+@layer components {
+  /* Main white / dark cards — large radius, soft lift */
+  .premium-card {
+    @apply rounded-[28px] border border-white/80 bg-white/95 shadow-premium backdrop-blur-sm;
+    @apply dark:border-white/[0.06] dark:bg-[#151c26]/95 dark:shadow-none dark:ring-1 dark:ring-white/[0.05];
+  }
+
+  .glass-panel {
+    @apply premium-card;
+  }
+
+  /* Primary CTA — vibrant orange, premium depth */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-8 py-4 text-[15px] font-semibold tracking-wide text-white;
+    @apply bg-gradient-to-b from-premium-orange to-[#e84e1f] shadow-premium-btn shadow-premium-inset;
+    @apply transition-all duration-300 ease-out;
+    @apply hover:-translate-y-0.5 hover:from-premium-orange-hover hover:to-[#ff5c28] hover:shadow-lg;
+    @apply active:translate-y-0 active:brightness-95;
+    @apply disabled:pointer-events-none disabled:translate-y-0 disabled:opacity-45 disabled:shadow-none;
+    @apply dark:from-orange-500 dark:to-orange-600 dark:hover:from-orange-400 dark:hover:to-orange-500;
+  }
+
+  /* Secondary — soft gray pill */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-2xl bg-slate-100 px-6 py-3.5 text-[14px] font-semibold text-slate-800;
+    @apply shadow-premium-sm transition-all duration-200 hover:bg-slate-200/90 hover:-translate-y-0.5;
+    @apply dark:bg-white/10 dark:text-white dark:hover:bg-white/15;
+  }
+
+  /* Outline — “Visit site” style */
+  .btn-outline-premium {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-slate-200/90 bg-white px-6 py-3.5 text-[14px] font-semibold text-premium-navy;
+    @apply transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 hover:shadow-premium-sm;
+    @apply dark:border-white/15 dark:bg-transparent dark:text-white dark:hover:bg-white/5;
+  }
+
+  .premium-input {
+    @apply w-full rounded-2xl border-0 bg-slate-100/90 px-5 py-3.5 text-[15px] text-slate-900 placeholder:text-slate-400;
+    @apply shadow-inner shadow-white/20 outline-none ring-1 ring-slate-200/60 transition-shadow;
+    @apply focus:bg-white focus:ring-2 focus:ring-premium-orange/35 focus:ring-offset-0;
+    @apply dark:bg-white/[0.07] dark:text-white dark:placeholder:text-slate-500 dark:ring-white/10 dark:focus:ring-premium-orange/40;
+  }
+}
