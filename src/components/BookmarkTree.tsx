@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronRight,
   Folder,
+  FolderPlus,
   Link2,
   ExternalLink,
   Search,
@@ -17,6 +18,7 @@ import {
   Trash2,
   Check,
   X,
+  Plus,
 } from 'lucide-react';
 import type { BookmarkNode } from '../types/bookmark';
 import { useBookmarkStore } from '../store/bookmarkStore';
@@ -292,6 +294,8 @@ const TreeNode: FC<TreeNodeProps> = ({ node, depth = 0 }) => {
 
 export const BookmarkTree: FC = () => {
   const mergeResult = useBookmarkStore((s) => s.mergeResult);
+  const addMergeFolderAtRoot = useBookmarkStore((s) => s.addMergeFolderAtRoot);
+  const addMergeBookmarkAtRoot = useBookmarkStore((s) => s.addMergeBookmarkAtRoot);
   const [query, setQuery] = useState('');
 
   const displayRoot = useMemo(() => {
@@ -323,6 +327,24 @@ export const BookmarkTree: FC = () => {
             className="premium-input py-3 pl-11 pr-4 text-[13px]"
             aria-label="Filter bookmarks"
           />
+        </div>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => addMergeFolderAtRoot()}
+            className="btn-secondary flex items-center gap-2 py-2 px-3 text-[13px]"
+          >
+            <FolderPlus className="h-4 w-4 text-premium-orange" />
+            Folder
+          </button>
+          <button
+            type="button"
+            onClick={() => addMergeBookmarkAtRoot()}
+            className="btn-secondary flex items-center gap-2 py-2 px-3 text-[13px]"
+          >
+            <Plus className="h-4 w-4 text-premium-orange" />
+            Bookmark
+          </button>
         </div>
       </div>
       <div className="min-h-0 flex-1 space-y-0.5 overflow-y-auto pr-1">
