@@ -66,5 +66,7 @@ export interface AppState {
   dismissSessionNotice: () => void;
   addMergeFolderAtRoot: () => void;
   addMergeBookmarkAtRoot: () => void;
+  addMergeFolderToFolder: (parentId: string) => void;
+  addMergeBookmarkToFolder: (parentId: string) => void;
   copyMarkdownToClipboard: () => Promise<boolean>;
 }

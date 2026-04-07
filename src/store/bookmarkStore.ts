@@ -212,6 +212,42 @@ export const useBookmarkStore = create<AppState>()(
       });
     },
 
+    addMergeFolderToFolder: (parentId: string) => {
+      set((state) => {
+        const root = state.mergeResult?.root;
+        if (!root) return;
+        const parent = findNodeById(root, parentId);
+        if (!parent || parent.type !== 'folder') return;
+        if (!parent.children) parent.children = [];
+        parent.children.push({
+          id: generateMergeNodeId(),
+          type: 'folder',
+          title: 'New folder',
+          sourceFile: 'manual',
+          children: [],
+        });
+        state.mergeResult!.stats.uniqueBookmarks = countBookmarksInTree(root);
+      });
+    },
+
+    addMergeBookmarkToFolder: (parentId: string) => {
+      set((state) => {
+        const root = state.mergeResult?.root;
+        if (!root) return;
+        const parent = findNodeById(root, parentId);
+        if (!parent || parent.type !== 'folder') return;
+        if (!parent.children) parent.children = [];
+        parent.children.push({
+          id: generateMergeNodeId(),
+          type: 'bookmark',
+          title: 'New bookmark',
+          url: 'https://',
+          sourceFile: 'manual',
+        });
+        state.mergeResult!.stats.uniqueBookmarks = countBookmarksInTree(root);
+      });
+    },
+
     copyMarkdownToClipboard: async () => {
       const { mergeResult } = get();
       if (!mergeResult) return false;

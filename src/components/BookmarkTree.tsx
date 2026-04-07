@@ -40,6 +40,8 @@ const TreeNode: FC<TreeNodeProps> = ({ node, depth = 0 }) => {
 
   const updateMergeNode = useBookmarkStore((s) => s.updateMergeNode);
   const removeMergeNode = useBookmarkStore((s) => s.removeMergeNode);
+  const addMergeFolderToFolder = useBookmarkStore((s) => s.addMergeFolderToFolder);
+  const addMergeBookmarkToFolder = useBookmarkStore((s) => s.addMergeBookmarkToFolder);
 
   const startEdit = useCallback(() => {
     setDraftTitle(node.title);
@@ -248,6 +250,28 @@ const TreeNode: FC<TreeNodeProps> = ({ node, depth = 0 }) => {
             <span className="ml-auto shrink-0 text-[11px] font-medium text-slate-400">
               {count} items
             </span>
+          </button>
+          <button
+            type="button"
+            className={`${actionBtn} opacity-100 md:opacity-0 md:group-hover:opacity-100`}
+            onClick={(e) => {
+              e.stopPropagation();
+              addMergeBookmarkToFolder(node.id);
+            }}
+            aria-label="Add bookmark to folder"
+          >
+            <Plus className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            className={`${actionBtn} opacity-100 md:opacity-0 md:group-hover:opacity-100`}
+            onClick={(e) => {
+              e.stopPropagation();
+              addMergeFolderToFolder(node.id);
+            }}
+            aria-label="Add subfolder"
+          >
+            <FolderPlus className="h-3.5 w-3.5" />
           </button>
           <button
             type="button"
