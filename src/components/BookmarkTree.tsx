@@ -10,7 +10,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronRight,
   Folder,
-  FolderPlus,
   Link2,
   ExternalLink,
   Search,
@@ -293,8 +292,6 @@ const TreeNode: FC<TreeNodeProps> = ({ node, depth = 0 }) => {
 
 export const BookmarkTree: FC = () => {
   const mergeResult = useBookmarkStore((s) => s.mergeResult);
-  const addMergeFolderAtRoot = useBookmarkStore((s) => s.addMergeFolderAtRoot);
-  const addMergeBookmarkAtRoot = useBookmarkStore((s) => s.addMergeBookmarkAtRoot);
   const [query, setQuery] = useState('');
 
   const displayRoot = useMemo(() => {
@@ -303,8 +300,6 @@ export const BookmarkTree: FC = () => {
     if (!q) return mergeResult.root;
     return filterBookmarkTree(mergeResult.root, q);
   }, [mergeResult, query]);
-
-  if (!mergeResult) return null;
 
   const children = displayRoot?.children ?? [];
   const emptySearch = query.trim().length > 0 && children.length === 0;
@@ -315,26 +310,8 @@ export const BookmarkTree: FC = () => {
         <div className="min-w-0 flex-1">
           <h3 className="text-xl font-bold text-slate-900 dark:text-white">Preview</h3>
           <p className="mt-1 text-[13px] text-slate-500 dark:text-slate-400">
-            Edit, remove, or add folders and links at the top level before export.
+            Edit or remove folders and links at the top level before export.
           </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => addMergeFolderAtRoot()}
-              className="btn-secondary inline-flex items-center gap-2 py-2.5 pl-3 pr-4 text-[13px]"
-            >
-              <FolderPlus className="h-4 w-4 text-premium-orange" strokeWidth={2} aria-hidden />
-              Add folder
-            </button>
-            <button
-              type="button"
-              onClick={() => addMergeBookmarkAtRoot()}
-              className="btn-secondary inline-flex items-center gap-2 py-2.5 pl-3 pr-4 text-[13px]"
-            >
-              <Link2 className="h-4 w-4 text-premium-orange" strokeWidth={2} aria-hidden />
-              Add bookmark
-            </button>
-          </div>
         </div>
         <div className="relative w-full lg:max-w-xs">
           <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -351,8 +328,10 @@ export const BookmarkTree: FC = () => {
       <div className="min-h-0 flex-1 space-y-0.5 overflow-y-auto pr-1">
         {emptySearch ? (
           <p className="py-10 text-center text-[13px] text-slate-400">No bookmarks match.</p>
-        ) : (
+        ) : children.length > 0 ? (
           children.map((child) => <TreeNode key={child.id} node={child} depth={0} />)
+        ) : (
+          <p className="py-10 text-center text-[13px] text-slate-400">No bookmarks yet. Add a folder or bookmark to get started.</p>
         )}
       </div>
     </div>

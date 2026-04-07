@@ -144,8 +144,28 @@ export const useBookmarkStore = create<AppState>()(
 
     addMergeFolderAtRoot: () => {
       set((state) => {
-        const root = state.mergeResult?.root;
-        if (!root) return;
+        // If no mergeResult exists, create a default one
+        if (!state.mergeResult) {
+          state.mergeResult = {
+            root: {
+              id: 'root',
+              type: 'root' as const,
+              title: 'Merged Bookmarks',
+              sourceFile: 'merged',
+              children: []
+            },
+            duplicates: [],
+            stats: {
+              totalInputBookmarks: 0,
+              uniqueBookmarks: 0,
+              removedDuplicates: 0,
+              mergedFolders: 0
+            },
+            sourceFiles: []
+          };
+        }
+        
+        const root = state.mergeResult.root;
         if (!root.children) root.children = [];
         root.children.push({
           id: generateMergeNodeId(),
@@ -154,14 +174,33 @@ export const useBookmarkStore = create<AppState>()(
           sourceFile: 'manual',
           children: [],
         });
-        state.mergeResult!.stats.uniqueBookmarks = countBookmarksInTree(root);
       });
     },
 
     addMergeBookmarkAtRoot: () => {
       set((state) => {
-        const root = state.mergeResult?.root;
-        if (!root) return;
+        // If no mergeResult exists, create a default one
+        if (!state.mergeResult) {
+          state.mergeResult = {
+            root: {
+              id: 'root',
+              type: 'root' as const,
+              title: 'Merged Bookmarks',
+              sourceFile: 'merged',
+              children: []
+            },
+            duplicates: [],
+            stats: {
+              totalInputBookmarks: 0,
+              uniqueBookmarks: 0,
+              removedDuplicates: 0,
+              mergedFolders: 0
+            },
+            sourceFiles: []
+          };
+        }
+        
+        const root = state.mergeResult.root;
         if (!root.children) root.children = [];
         root.children.push({
           id: generateMergeNodeId(),
@@ -170,7 +209,6 @@ export const useBookmarkStore = create<AppState>()(
           url: 'https://',
           sourceFile: 'manual',
         });
-        state.mergeResult!.stats.uniqueBookmarks = countBookmarksInTree(root);
       });
     },
 
