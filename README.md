@@ -1,5 +1,8 @@
 # Bookmark Manager
 
+## 🚀 Live Demo
+👉 https://bookmark-manager-sumit.vercel.app
+
 A powerful web application to merge, deduplicate, and export bookmarks from multiple browsers. Drop HTML or JSON exports from Chrome, Firefox, Safari, or Edge, and get a clean, organized bookmark library.
 
 ## Features
