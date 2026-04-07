@@ -9,6 +9,26 @@ function readInitialDark(): boolean {
   return window.matchMedia('(prefers-color-scheme: dark)').matches;
 }
 
+function playClickSound(): void {
+  const AudioContextClass: typeof AudioContext = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+  if (!AudioContextClass) return;
+
+  const ctx = new AudioContextClass();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+
+  osc.frequency.value = 800;
+  osc.type = 'sine';
+  gain.gain.setValueAtTime(0.3, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + 0.08);
+}
+
 /**
  * Light / dark appearance as a sliding on–off style switch (dark = “on”).
  */
@@ -20,7 +40,10 @@ export const ThemeToggle: FC = () => {
     localStorage.setItem(STORAGE_KEY, dark ? 'dark' : 'light');
   }, [dark]);
 
-  const toggle = () => setDark((d) => !d);
+  const toggle = () => {
+    playClickSound();
+    setDark((d) => !d);
+  };
 
   return (
     <div className="flex items-center gap-3">
