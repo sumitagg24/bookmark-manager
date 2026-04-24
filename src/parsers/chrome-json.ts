@@ -5,7 +5,16 @@ function generateId(): string {
   return Math.random().toString(36).substring(2, 9);
 }
 
-function convertChromeNode(node: any, sourceFile: string, parentFolder: string): BookmarkNode | null {
+interface ChromeBookmarkNode {
+  type: 'folder' | 'url';
+  name?: string;
+  date_added?: string;
+  date_modified?: string;
+  url?: string;
+  children?: ChromeBookmarkNode[];
+}
+
+function convertChromeNode(node: ChromeBookmarkNode, sourceFile: string, parentFolder: string): BookmarkNode | null {
   if (node.type === 'folder') {
     const folderNode: BookmarkNode = {
       id: generateId(),
@@ -19,7 +28,7 @@ function convertChromeNode(node: any, sourceFile: string, parentFolder: string):
     };
     
     if (node.children) {
-      node.children.forEach((child: any) => {
+      node.children.forEach((child) => {
         const converted = convertChromeNode(child, sourceFile, `${parentFolder}/${folderNode.title}`);
         if (converted) folderNode.children!.push(converted);
       });
@@ -99,7 +108,7 @@ export function detectFormat(content: string): 'netscape' | 'chrome-json' | 'unk
     if (json.roots || json.bookmark_bar || json.bookmarks) {
       return 'chrome-json';
     }
-  } catch (e) {
+  } catch {
     // Not JSON
   }
   return 'unknown';

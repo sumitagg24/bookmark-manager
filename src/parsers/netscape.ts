@@ -11,49 +11,62 @@ function parseDate(dateStr: string | null): number | undefined {
 }
 
 function parseNode(dtElement: Element, sourceFile: string, parentFolder: string): BookmarkNode | null {
-  const header = dtElement.querySelector('h3');
-  const link = dtElement.querySelector('a');
+  // Look for H3 or A as direct children
+  let h3: Element | null = null;
+  let a: Element | null = null;
   
-  if (header) {
+  for (let i = 0; i < dtElement.children.length; i++) {
+    const child = dtElement.children[i];
+    if (child.tagName === 'H3') {
+      h3 = child;
+      break;
+    } else if (child.tagName === 'A') {
+      a = child;
+      break;
+    }
+  }
+  
+  if (h3) {
     // It's a folder
-    const folderName = header.textContent || 'Untitled Folder';
+    const folderName = h3.textContent || 'Untitled Folder';
     const node: BookmarkNode = {
       id: generateId(),
       type: 'folder',
       title: folderName,
-      addDate: parseDate(header.getAttribute('add_date')),
-      lastModified: parseDate(header.getAttribute('last_modified')),
+      addDate: parseDate(h3.getAttribute('add_date')),
+      lastModified: parseDate(h3.getAttribute('last_modified')),
       sourceFile,
       originalFolder: parentFolder,
       children: [],
     };
     
-    // Find the associated DL (contents) - search through siblings
-    let nextEl = dtElement.nextElementSibling;
-    while (nextEl) {
-      if (nextEl.tagName === 'DL') {
-        const children = Array.from(nextEl.children);
-        children.forEach(child => {
+    // Find the associated DL - it should be the next DL sibling
+    let sibling = dtElement.nextElementSibling;
+    while (sibling) {
+      if (sibling.tagName === 'DL') {
+        // Found the DL for this folder
+        for (let i = 0; i < sibling.children.length; i++) {
+          const child = sibling.children[i];
           if (child.tagName === 'DT') {
             const childNode = parseNode(child, sourceFile, `${parentFolder}/${folderName}`);
             if (childNode) node.children!.push(childNode);
           }
-        });
+        }
         break;
       }
-      nextEl = nextEl.nextElementSibling;
+      sibling = sibling.nextElementSibling;
     }
     
     return node;
-  } else if (link) {
+  } else if (a) {
     // It's a bookmark
     return {
       id: generateId(),
       type: 'bookmark',
-      title: link.textContent || 'Untitled',
-      url: link.getAttribute('href') || '',
-      addDate: parseDate(link.getAttribute('add_date')),
-      icon: link.getAttribute('icon') || undefined,
+      title: a.textContent || 'Untitled',
+      url: a.getAttribute('href') || '',
+      addDate: parseDate(a.getAttribute('add_date')),
+      icon: a.getAttribute('icon') || undefined,
       sourceFile,
       originalFolder: parentFolder,
     };
@@ -78,13 +91,13 @@ export function parseNetscapeHTML(content: string, filename: string): ParsedFile
   const allDLs = doc.querySelectorAll('dl');
   if (allDLs.length > 0) {
     const rootDL = allDLs[0];
-    const children = Array.from(rootDL.children);
-    children.forEach(child => {
+    for (let i = 0; i < rootDL.children.length; i++) {
+      const child = rootDL.children[i];
       if (child.tagName === 'DT') {
         const node = parseNode(child, filename, 'Root');
         if (node) root.children!.push(node);
       }
-    });
+    }
   }
   
   // Calculate stats

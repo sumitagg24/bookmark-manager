@@ -7,7 +7,7 @@ export function normalizeUrl(url: string): string {
       u.pathname = u.pathname.slice(0, -1);
     }
     return u.toString();
-  } catch (e) {
+  } catch {
     return url.toLowerCase().trim();
   }
 }
