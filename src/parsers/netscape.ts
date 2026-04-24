@@ -28,16 +28,20 @@ function parseNode(dtElement: Element, sourceFile: string, parentFolder: string)
       children: [],
     };
     
-    // Find the associated DL (contents)
+    // Find the associated DL (contents) - search through siblings
     let nextEl = dtElement.nextElementSibling;
-    if (nextEl && nextEl.tagName === 'DL') {
-      const children = Array.from(nextEl.children);
-      children.forEach(child => {
-        if (child.tagName === 'DT') {
-          const childNode = parseNode(child, sourceFile, `${parentFolder}/${folderName}`);
-          if (childNode) node.children!.push(childNode);
-        }
-      });
+    while (nextEl) {
+      if (nextEl.tagName === 'DL') {
+        const children = Array.from(nextEl.children);
+        children.forEach(child => {
+          if (child.tagName === 'DT') {
+            const childNode = parseNode(child, sourceFile, `${parentFolder}/${folderName}`);
+            if (childNode) node.children!.push(childNode);
+          }
+        });
+        break;
+      }
+      nextEl = nextEl.nextElementSibling;
     }
     
     return node;
@@ -70,9 +74,10 @@ export function parseNetscapeHTML(content: string, filename: string): ParsedFile
     children: [],
   };
   
-  // Find the root DL
-  const rootDL = doc.querySelector('dl');
-  if (rootDL) {
+  // Find all DL elements and process the first one (root)
+  const allDLs = doc.querySelectorAll('dl');
+  if (allDLs.length > 0) {
+    const rootDL = allDLs[0];
     const children = Array.from(rootDL.children);
     children.forEach(child => {
       if (child.tagName === 'DT') {
