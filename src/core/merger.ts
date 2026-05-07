@@ -19,30 +19,6 @@ function findFolderByName(parent: BookmarkNode, name: string): BookmarkNode | un
   return parent.children?.find(c => c.type === 'folder' && c.title === name);
 }
 
-// Find the folder path (ancestors) for a given node
-function findFolderPath(root: BookmarkNode, nodeId: string): string[] {
-  const path: string[] = [];
-  
-  function traverse(node: BookmarkNode): boolean {
-    if (node.id === nodeId) return true;
-    if (!node.children) return false;
-    
-    for (const child of node.children) {
-      if (child.type === 'folder') {
-        path.push(child.title);
-        if (traverse(child)) return true;
-        path.pop();
-      } else if (child.id === nodeId) {
-        return true;
-      }
-    }
-    return false;
-  }
-  
-  traverse(root);
-  return path;
-}
-
 function mergeFoldersImmutable(target: BookmarkNode, source: BookmarkNode): BookmarkNode {
   const targetChildren = target.children || [];
   const newChildren = [...targetChildren];
