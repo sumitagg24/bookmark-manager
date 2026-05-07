@@ -6,9 +6,17 @@ import { StatsPanel } from './components/StatsPanel';
 import { BookmarkTree } from './components/BookmarkTree';
 import { ExportPanel } from './components/ExportPanel';
 import { DuplicateReport } from './components/DuplicateReport';
+import { SimilarBookmarksReport } from './components/SimilarBookmarksReport';
+import { AdvancedFeaturesPanel } from './components/AdvancedFeaturesPanel';
 import { DashboardNav } from './components/DashboardNav';
 import { PremiumSidebar } from './components/PremiumSidebar';
 import { ThemeToggle } from './components/ThemeToggle';
+import { TagsPanel } from './components/TagsPanel';
+import { SearchHistoryPanel } from './components/SearchHistoryPanel';
+import { FavoritesPanel } from './components/FavoritesPanel';
+import { BackupRestorePanel } from './components/BackupRestorePanel';
+import { KeyboardShortcutsPanel } from './components/KeyboardShortcutsPanel';
+import { OnboardingGuide } from './components/OnboardingGuide';
 import { useBookmarkStore } from './store/bookmarkStore';
 
 const scrollToSection = (id: string) => {
@@ -129,12 +137,29 @@ function App() {
 
             {hasFiles && (
               <>
+                <section id="section-favorites" className="scroll-mt-28">
+                  <FavoritesPanel />
+                </section>
                 <section id="section-stats" className="scroll-mt-28">
                   <StatsPanel mergeResult={mergeResult} />
                 </section>
                 <DuplicateReport />
+                <SimilarBookmarksReport />
                 <section id="section-preview" className="scroll-mt-28">
                   <BookmarkTree />
+                </section>
+                <section id="section-tags" className="scroll-mt-28">
+                  <TagsPanel />
+                </section>
+                <section id="section-search-history" className="scroll-mt-28">
+                  <SearchHistoryPanel />
+                </section>
+                <AdvancedFeaturesPanel />
+                <section id="section-backup" className="scroll-mt-28">
+                  <BackupRestorePanel />
+                </section>
+                <section id="section-shortcuts" className="scroll-mt-28">
+                  <KeyboardShortcutsPanel />
                 </section>
                 <section id="section-export" className="scroll-mt-28">
                   <ExportPanel />
@@ -172,6 +197,7 @@ function App() {
         </motion.main>
 
         <PremiumSidebar hasFiles={hasFiles} mergeResult={mergeResult} />
+        <OnboardingGuide hasFiles={hasFiles} onClose={() => {}} />
       </div>
     </div>
   );

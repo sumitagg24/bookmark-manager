@@ -1,3 +1,4 @@
+import { BarChart3 } from 'lucide-react';
 import type { MergeResult } from '../types/bookmark';
 
 interface StatsPanelProps {
@@ -41,13 +42,17 @@ function StatPill({
 }
 
 export function StatsPanel({ mergeResult }: StatsPanelProps) {
-  if (!mergeResult) {
-    return (
-      <div className="premium-card p-8 text-center text-[14px] text-slate-500 dark:text-slate-400">
-        Upload files to see merge statistics.
-      </div>
-    );
-  }
+   if (!mergeResult || !mergeResult.stats) {
+     return (
+       <div className="premium-card p-8 text-center">
+         <BarChart3 className="h-16 w-16 text-slate-300 mx-auto mb-4" strokeWidth={1} />
+         <p className="text-lg font-medium text-slate-600 dark:text-slate-400 mb-2">No statistics yet</p>
+         <p className="text-[14px] text-slate-500 dark:text-slate-500 max-w-sm mx-auto">
+           Upload bookmark files to see merge statistics and insights about your collection.
+         </p>
+       </div>
+     );
+   }
 
   return (
     <div className="premium-card p-6 md:p-8">
@@ -59,7 +64,7 @@ export function StatsPanel({ mergeResult }: StatsPanelProps) {
         <StatPill value={mergeResult.stats.totalInputBookmarks} label="Total input" variant="light" />
         <StatPill value={mergeResult.stats.uniqueBookmarks} label="Unique" variant="navy" />
         <StatPill value={mergeResult.stats.removedDuplicates} label="Duplicates" variant="light" />
-        <StatPill value={mergeResult.stats.mergedFolders} label="Folders merged" variant="light" />
+        <StatPill value={mergeResult.stats.similarBookmarksFound} label="Similar found" variant="light" />
       </div>
 
       {mergeResult.sourceFiles.length > 0 && (
