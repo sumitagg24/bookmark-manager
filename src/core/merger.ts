@@ -1,5 +1,6 @@
 import type { BookmarkNode, DuplicateGroup, MergeResult, ParsedFile } from '../types/bookmark';
 import { normalizeUrl } from './normalizer';
+import { detectSimilarBookmarks, collectAllBookmarks } from './similarityDetector';
 
 function generateId(): string {
   return Math.random().toString(36).substring(2, 9);
@@ -10,7 +11,7 @@ function cloneNode(node: BookmarkNode, newSource?: string): BookmarkNode {
     ...node,
     id: generateId(),
     sourceFile: newSource || node.sourceFile,
-    children: node.children?.map(c => cloneNode(c, newSource)),
+    children: node.children ? node.children.map(c => cloneNode(c, newSource)) : undefined,
   };
 }
 
@@ -18,21 +19,56 @@ function findFolderByName(parent: BookmarkNode, name: string): BookmarkNode | un
   return parent.children?.find(c => c.type === 'folder' && c.title === name);
 }
 
-function mergeFolders(target: BookmarkNode, source: BookmarkNode): void {
-  if (!target.children) target.children = [];
+// Find the folder path (ancestors) for a given node
+function findFolderPath(root: BookmarkNode, nodeId: string): string[] {
+  const path: string[] = [];
+  
+  function traverse(node: BookmarkNode): boolean {
+    if (node.id === nodeId) return true;
+    if (!node.children) return false;
+    
+    for (const child of node.children) {
+      if (child.type === 'folder') {
+        path.push(child.title);
+        if (traverse(child)) return true;
+        path.pop();
+      } else if (child.id === nodeId) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
+  traverse(root);
+  return path;
+}
+
+function mergeFoldersImmutable(target: BookmarkNode, source: BookmarkNode): BookmarkNode {
+  const targetChildren = target.children || [];
+  const newChildren = [...targetChildren];
   
   source.children?.forEach(sourceChild => {
     if (sourceChild.type === 'folder') {
-      const existingFolder = findFolderByName(target, sourceChild.title);
-      if (existingFolder && existingFolder.type === 'folder') {
-        mergeFolders(existingFolder, sourceChild);
+      const existingFolderIndex = newChildren.findIndex(
+        c => c.type === 'folder' && c.title === sourceChild.title
+      );
+      if (existingFolderIndex >= 0) {
+        newChildren[existingFolderIndex] = mergeFoldersImmutable(
+          newChildren[existingFolderIndex],
+          sourceChild
+        );
       } else {
-        target.children!.push(cloneNode(sourceChild));
+        newChildren.push(cloneNode(sourceChild));
       }
     } else {
-      target.children!.push(cloneNode(sourceChild));
+      newChildren.push(cloneNode(sourceChild));
     }
   });
+  
+  return {
+    ...target,
+    children: newChildren,
+  };
 }
 
 export function deduplicateAndMerge(files: ParsedFile[]): MergeResult {
@@ -41,7 +77,7 @@ export function deduplicateAndMerge(files: ParsedFile[]): MergeResult {
   let mergedFolderCount = 0;
   let totalInput = 0;
   
-  const root: BookmarkNode = {
+  let root: BookmarkNode = {
     id: generateId(),
     type: 'root',
     title: 'Merged Bookmarks',
@@ -49,80 +85,116 @@ export function deduplicateAndMerge(files: ParsedFile[]): MergeResult {
     children: [],
   };
   
-  const allBookmarks: { node: BookmarkNode; parent: BookmarkNode; normalized: string }[] = [];
-  
-  function collectBookmarks(node: BookmarkNode, parent: BookmarkNode) {
-    if (node.type === 'bookmark' && node.url) {
-      totalInput++;
-      const normalized = normalizeUrl(node.url);
-      allBookmarks.push({ node, parent, normalized });
-    }
-    node.children?.forEach(child => {
-      if (child.type === 'folder') {
-        collectBookmarks(child, child);
-      } else if (child.type === 'bookmark') {
-        collectBookmarks(child, node);
-      }
-    });
-  }
-  
+  // Merge all files first
   files.forEach(file => {
     file.root.children?.forEach(topLevelNode => {
       if (topLevelNode.type === 'folder') {
         const existingFolder = findFolderByName(root, topLevelNode.title);
         if (existingFolder && existingFolder.type === 'folder') {
-          mergeFolders(existingFolder, topLevelNode);
+          // Merge the folder contents
+          const mergedFolder = mergeFoldersImmutable(existingFolder, topLevelNode);
+          // Find and replace the folder in root's children
+          root = {
+            ...root,
+            children: root.children?.map(c => c.id === existingFolder.id ? mergedFolder : c) || [],
+          };
           mergedFolderCount++;
         } else {
-          root.children!.push(cloneNode(topLevelNode, file.filename));
+          const cloned = cloneNode(topLevelNode, file.filename);
+          root = {
+            ...root,
+            children: [...(root.children || []), cloned],
+          };
         }
-        collectBookmarks(topLevelNode, topLevelNode);
       } else if (topLevelNode.type === 'bookmark') {
-        root.children!.push(cloneNode(topLevelNode, file.filename));
-        collectBookmarks(topLevelNode, root);
+        const cloned = cloneNode(topLevelNode, file.filename);
+        root = {
+          ...root,
+          children: [...(root.children || []), cloned],
+        };
       }
     });
   });
   
+// Now collect bookmarks from the merged root (with correct IDs)
+   const bookmarksForDedup: { node: BookmarkNode; normalized: string; location?: string }[] = [];
+   
+   function collectBookmarks(node: BookmarkNode, folderPath: string[] = []) {
+     if (node.type === 'bookmark' && node.url) {
+       totalInput++;
+       const normalized = normalizeUrl(node.url);
+       bookmarksForDedup.push({ 
+         node, 
+         normalized,
+         location: folderPath.length > 0 ? folderPath.join(' / ') : undefined
+       });
+     } else if (node.type === 'folder') {
+       const newPath = [...folderPath, node.title];
+       node.children?.forEach(child => collectBookmarks(child, newPath));
+     } else {
+       node.children?.forEach(child => collectBookmarks(child, folderPath));
+     }
+   }
+   
+   collectBookmarks(root);
+  
+  // Deduplicate based on normalized URLs
   const processedUrls = new Set<string>();
+  const nodesToRemove = new Set<string>();
   
-  allBookmarks.forEach(({ node, parent, normalized }) => {
-    if (processedUrls.has(normalized)) {
-      const group = duplicates.find(d => d.normalizedUrl === normalized);
-      if (group) {
-        group.duplicates.push(node);
-      }
-      removedCount++;
-      if (parent.children) {
-        parent.children = parent.children.filter(c => c.id !== node.id);
-      }
-    } else {
-      processedUrls.add(normalized);
-      duplicates.push({
-        canonical: node,
-        duplicates: [],
-        normalizedUrl: normalized,
-      });
-    }
-  });
+bookmarksForDedup.forEach(({ node, normalized, location }) => {
+     if (processedUrls.has(normalized)) {
+       const group = duplicates.find(d => d.normalizedUrl === normalized);
+       if (group) {
+         group.duplicates.push({ ...node, originalFolder: location });
+       }
+       removedCount++;
+       nodesToRemove.add(node.id);
+     } else {
+       processedUrls.add(normalized);
+       duplicates.push({
+         canonical: { ...node, originalFolder: location },
+         duplicates: [],
+         normalizedUrl: normalized,
+         location,
+       });
+     }
+   });
   
-  function removeEmptyFolders(node: BookmarkNode): boolean {
-    if (!node.children) return node.type === 'bookmark';
-    node.children = node.children.filter(child => {
-      if (child.type === 'folder') {
-        return removeEmptyFolders(child);
-      }
-      return true;
-    });
-    return node.children.length > 0 || node.type === 'bookmark';
+  // Remove duplicates immutably
+  function removeDuplicatesFromNode(node: BookmarkNode): BookmarkNode {
+    if (!node.children) return node;
+    
+    const filteredChildren = node.children
+      .filter(c => !nodesToRemove.has(c.id))
+      .map(c => (c.type === 'folder' ? removeDuplicatesFromNode(c) : c));
+    
+    return {
+      ...node,
+      children: filteredChildren,
+    };
   }
   
-  root.children = root.children?.filter(child => {
-    if (child.type === 'folder') {
-      return removeEmptyFolders(child);
-    }
-    return true;
-  });
+  root = removeDuplicatesFromNode(root);
+  
+  // Remove empty folders immutably
+  function removeEmptyFolders(node: BookmarkNode): BookmarkNode | null {
+    if (!node.children) return node.type === 'bookmark' ? node : null;
+    
+    const filteredChildren = node.children
+      .map(child => (child.type === 'folder' ? removeEmptyFolders(child) : child))
+      .filter((c): c is BookmarkNode => c !== null);
+    
+    if (filteredChildren.length === 0 && node.type !== 'root') return null;
+    
+    return {
+      ...node,
+      children: filteredChildren,
+    };
+  }
+  
+  const cleaned = removeEmptyFolders(root);
+  if (cleaned) root = cleaned;
   
   let uniqueCount = 0;
   function countBookmarks(node: BookmarkNode) {
@@ -131,14 +203,20 @@ export function deduplicateAndMerge(files: ParsedFile[]): MergeResult {
   }
   countBookmarks(root);
   
+  // Detect similar bookmarks
+  const allBookmarks = collectAllBookmarks(root);
+  const similarBookmarks = detectSimilarBookmarks(allBookmarks);
+  
   return {
     root,
     duplicates,
+    similarBookmarks,
     stats: {
       totalInputBookmarks: totalInput,
       uniqueBookmarks: uniqueCount,
       removedDuplicates: removedCount,
       mergedFolders: mergedFolderCount,
+      similarBookmarksFound: similarBookmarks.reduce((sum, g) => sum + g.similar.length, 0),
     },
     sourceFiles: files.map(f => f.filename),
   };

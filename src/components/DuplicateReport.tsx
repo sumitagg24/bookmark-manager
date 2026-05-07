@@ -59,35 +59,45 @@ export const DuplicateReport: FC = () => {
                     transition={{ duration: 0.2 }}
                     className="overflow-hidden border-t border-slate-100 dark:border-white/[0.06]"
                   >
-                    <div className="space-y-4 p-5 text-[13px]">
-                      <div>
-                        <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">
-                          Kept
-                        </p>
-                        <p className="break-all font-medium text-slate-800 dark:text-slate-200">
-                          {g.canonical.url}
-                        </p>
-                        <p className="mt-1 text-[12px] text-slate-500">{g.canonical.sourceFile}</p>
-                      </div>
-                      <div>
-                        <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">
-                          Removed
-                        </p>
-                        <ul className="space-y-2">
-                          {g.duplicates.map((d) => (
-                            <li
-                              key={d.id}
-                              className="rounded-xl border-l-4 border-premium-orange bg-white/60 py-2 pl-3 dark:bg-black/20"
-                            >
-                              <p className="font-semibold text-slate-800 dark:text-slate-200">
-                                {d.title}
-                              </p>
-                              <p className="break-all text-[12px] text-slate-500">{d.url}</p>
-                              <p className="text-[11px] text-slate-400">{d.sourceFile}</p>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
+<div className="space-y-4 p-5 text-[13px]">
+                       <div>
+                         <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">
+                           Kept
+                         </p>
+                         <p className="break-all font-medium text-slate-800 dark:text-slate-200">
+                           {g.canonical.url}
+                         </p>
+                         <p className="mt-1 text-[12px] text-slate-500">{g.canonical.sourceFile}</p>
+                         {g.location && (
+                           <p className="mt-1 text-[11px] text-premium-navy dark:text-premium-teal">
+                             Folder: {g.location}
+                           </p>
+                         )}
+                       </div>
+<div>
+                         <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">
+                           Removed
+                         </p>
+                         <ul className="space-y-2">
+                           {g.duplicates.map((d) => (
+                             <li
+                               key={d.id}
+                               className="rounded-xl border-l-4 border-premium-orange bg-white/60 py-2 pl-3 dark:bg-black/20"
+                             >
+                               <p className="font-semibold text-slate-800 dark:text-slate-200">
+                                 {d.title}
+                               </p>
+                               <p className="break-all text-[12px] text-slate-500">{d.url}</p>
+                               <div className="flex items-center gap-2 text-[11px]">
+                                 <span className="text-slate-400">{d.sourceFile}</span>
+                                 {d.originalFolder && (
+                                   <span className="text-premium-navy dark:text-premium-teal">• {d.originalFolder}</span>
+                                 )}
+                               </div>
+                             </li>
+                           ))}
+                         </ul>
+                       </div>
                     </div>
                   </motion.div>
                 )}
