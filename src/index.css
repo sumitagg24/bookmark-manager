@@ -5,6 +5,7 @@
 @layer base {
   html {
     font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    scroll-behavior: smooth;
   }
 
   body {
@@ -14,7 +15,56 @@
 }
 
 @layer components {
-  /* Main white / dark cards — large radius, soft lift */
+  /* Blink landing page utilities */
+  .blink-nav-pill {
+    @apply rounded-2xl sm:rounded-full backdrop-blur-xl border;
+    @apply bg-white/95 border-gray-200/80 shadow-lg;
+    @apply dark:bg-[rgba(20,20,20,0.85)] dark:border-white/10 dark:shadow-none;
+    @apply transition-shadow duration-300;
+  }
+
+  .btn-nav-ghost {
+    @apply rounded-full px-3 sm:px-4 py-2 transition-all duration-200;
+    @apply text-gray-600 hover:text-gray-900 hover:bg-gray-100;
+    @apply dark:text-gray-300 dark:hover:text-white dark:hover:bg-white/10;
+  }
+
+  .btn-nav-primary {
+    @apply rounded-full bg-gradient-to-r from-[#e5ff47] to-amber-400 
+           text-[#0a0a0a] font-semibold 
+           hover:from-amber-400 hover:to-[#e5ff47] 
+           transition-all duration-200 
+           shadow-md hover:shadow-lg 
+           px-3 sm:px-6 py-2 sm:py-2.5
+           min-h-[44px];
+  }
+
+  .btn-cta-primary {
+    @apply rounded-full bg-gradient-to-r from-blue-600 to-cyan-600 
+           hover:from-blue-500 hover:to-cyan-500 
+           text-white font-semibold 
+           shadow-lg hover:shadow-xl 
+           transition-all duration-300 
+           hover:-translate-y-0.5
+           px-6 sm:px-8 py-4 sm:py-5
+           min-h-[56px];
+  }
+
+  .btn-cta-secondary {
+    @apply rounded-full border-2 
+           bg-gray-900 text-white border-gray-700
+           hover:border-gray-500 hover:bg-gray-800/80
+           transition-all duration-300
+           shadow-lg hover:shadow-xl
+           px-6 sm:px-8 py-4 sm:py-5
+           min-h-[56px];
+  }
+
+  .btn-cta-secondary:hover {
+    @apply border-gray-500;
+  }
+
+  /* Existing premium component styles for the app */
   .premium-card {
     @apply rounded-[28px] border border-white/80 bg-white/95 shadow-premium backdrop-blur-sm;
     @apply dark:border-white/[0.06] dark:bg-[#151c26]/95 dark:shadow-none dark:ring-1 dark:ring-white/[0.05];
@@ -24,7 +74,6 @@
     @apply premium-card;
   }
 
-  /* Primary CTA — vibrant orange, premium depth */
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-2xl px-8 py-4 text-[15px] font-semibold tracking-wide text-white;
     @apply bg-gradient-to-b from-premium-orange to-[#e84e1f] shadow-premium-btn shadow-premium-inset;
@@ -35,14 +84,12 @@
     @apply dark:from-orange-500 dark:to-orange-600 dark:hover:from-orange-400 dark:hover:to-orange-500;
   }
 
-  /* Secondary — soft gray pill */
   .btn-secondary {
     @apply inline-flex items-center justify-center rounded-2xl bg-slate-100 px-6 py-3.5 text-[14px] font-semibold text-slate-800;
     @apply shadow-premium-sm transition-all duration-200 hover:bg-slate-200/90 hover:-translate-y-0.5;
     @apply dark:bg-white/10 dark:text-white dark:hover:bg-white/15;
   }
 
-  /* Outline — “Visit site” style */
   .btn-outline-premium {
     @apply inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-slate-200/90 bg-white px-6 py-3.5 text-[14px] font-semibold text-premium-navy;
     @apply transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 hover:shadow-premium-sm;
@@ -55,4 +102,23 @@
     @apply focus:bg-white focus:ring-2 focus:ring-premium-orange/35 focus:ring-offset-0;
     @apply dark:bg-white/[0.07] dark:text-white dark:placeholder:text-slate-500 dark:ring-white/10 dark:focus:ring-premium-orange/40;
   }
+}
+
+/* Custom animations */
+@keyframes shine {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+.animate-shine {
+  animation: shine 3s infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
 }

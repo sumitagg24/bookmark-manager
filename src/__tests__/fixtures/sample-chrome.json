@@ -1,0 +1,55 @@
+{
+  "checksum": "test-checksum",
+  "roots": {
+    "bookmark_bar": {
+      "id": "1",
+      "title": "Bookmarks Bar",
+      "type": "folder",
+      "dateAdded": 1234567890000,
+      "children": [
+        {
+          "id": "2",
+          "title": "Google",
+          "url": "https://www.google.com",
+          "type": "bookmark",
+          "dateAdded": 1234567890000
+        },
+        {
+          "id": "3",
+          "title": "Development",
+          "type": "folder",
+          "dateAdded": 1234567890000,
+          "children": [
+            {
+              "id": "4",
+              "title": "GitHub",
+              "url": "https://github.com",
+              "type": "bookmark",
+              "dateAdded": 1234567890000
+            },
+            {
+              "id": "5",
+              "title": "Stack Overflow",
+              "url": "https://stackoverflow.com",
+              "type": "bookmark",
+              "dateAdded": 1234567890000
+            }
+          ]
+        }
+      ]
+    },
+    "other": {
+      "id": "6",
+      "title": "Other Bookmarks",
+      "type": "folder",
+      "children": []
+    },
+    "synced": {
+      "id": "7",
+      "title": "Mobile Bookmarks",
+      "type": "folder",
+      "children": []
+    }
+  },
+  "version": 1
+}

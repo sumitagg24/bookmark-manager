@@ -88,6 +88,7 @@ export function generateCsvExport(root: BookmarkNode): string {
 export function buildExportContent(root: BookmarkNode, format: ExportFormat): string {
   if (format === 'html') return generateNetscapeExport(root);
   if (format === 'urls') return generatePlainUrlList(root);
+  if (format === 'markdown') return generateMarkdownExport(root);
   return generateCsvExport(root);
 }
 
@@ -119,12 +120,14 @@ const FORMAT_MIME: Record<ExportFormat, string> = {
   html: 'text/html;charset=utf-8',
   urls: 'text/plain;charset=utf-8',
   csv: 'text/csv;charset=utf-8',
+  markdown: 'text/markdown;charset=utf-8',
 };
 
 const FORMAT_EXT: Record<ExportFormat, string> = {
   html: '.html',
   urls: '.txt',
   csv: '.csv',
+  markdown: '.md',
 };
 
 export function downloadExport(content: string, basename: string, format: ExportFormat) {

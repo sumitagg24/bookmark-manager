@@ -17,7 +17,7 @@ export function filterBookmarkTree(node: BookmarkNode, query: string): BookmarkN
     if (filteredChildren.length === 0) return null;
     return {
       ...node,
-      children: filteredChildren,
+      children: [...filteredChildren],
     };
   }
 

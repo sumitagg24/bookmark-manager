@@ -51,7 +51,13 @@ function convertChromeNode(node: ChromeBookmarkNode, sourceFile: string, parentF
 }
 
 export function parseChromeJSON(content: string, filename: string): ParsedFile {
-  const data = JSON.parse(content);
+  let data;
+  try {
+    data = JSON.parse(content);
+  } catch (err) {
+    throw new Error(`Invalid JSON format in ${filename}: ${err instanceof Error ? err.message : 'Unknown error'}`);
+  }
+  
   const root: BookmarkNode = {
     id: generateId(),
     type: 'root',

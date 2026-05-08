@@ -1,4 +1,4 @@
-import { BarChart3 } from 'lucide-react';
+import { BarChart3, TrendingUp, GitMerge, Database } from 'lucide-react';
 import type { MergeResult } from '../types/bookmark';
 
 interface StatsPanelProps {
@@ -8,33 +8,25 @@ interface StatsPanelProps {
 function StatPill({
   value,
   label,
-  variant,
+  icon: Icon,
+  colorClass,
+  bgClass,
 }: {
   value: number;
   label: string;
-  variant: 'light' | 'navy';
+  icon: typeof BarChart3;
+  colorClass: string;
+  bgClass: string;
 }) {
-  const isNavy = variant === 'navy';
   return (
-    <div
-      className={`flex flex-col justify-center rounded-[22px] px-4 py-5 text-center md:px-5 md:py-6 ${
-        isNavy
-          ? 'bg-premium-navy text-white shadow-lg shadow-premium-navy/20 dark:bg-[#0d1829]'
-          : 'border border-slate-100 bg-slate-50/90 dark:border-white/[0.06] dark:bg-white/[0.05]'
-      }`}
-    >
-      <div
-        className={`text-[28px] font-bold tabular-nums tracking-tight md:text-[32px] ${
-          isNavy ? 'text-white' : 'text-slate-900 dark:text-white'
-        }`}
-      >
+    <div className={`flex flex-col rounded-2xl p-5 text-center border border-slate-100/50 dark:border-white/[0.06] ${bgClass}`}>
+      <div className={`mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-xl ${colorClass} bg-white/80 dark:bg-white/10 border border-slate-200/50 dark:border-white/[0.06]`}>
+        <Icon className="h-5 w-5" strokeWidth={1.75} />
+      </div>
+      <div className="text-[28px] font-bold tabular-nums tracking-tight text-slate-900 dark:text-white">
         {value}
       </div>
-      <div
-        className={`mt-1.5 text-[10px] font-bold uppercase tracking-[0.12em] ${
-          isNavy ? 'text-white/60' : 'text-slate-500 dark:text-slate-400'
-        }`}
-      >
+      <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
         {label}
       </div>
     </div>
@@ -45,8 +37,10 @@ export function StatsPanel({ mergeResult }: StatsPanelProps) {
    if (!mergeResult || !mergeResult.stats) {
      return (
        <div className="premium-card p-8 text-center">
-         <BarChart3 className="h-16 w-16 text-slate-300 mx-auto mb-4" strokeWidth={1} />
-         <p className="text-lg font-medium text-slate-600 dark:text-slate-400 mb-2">No statistics yet</p>
+         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30 border border-blue-200/50 dark:border-blue-700/30">
+           <BarChart3 className="h-8 w-8 text-blue-600" strokeWidth={1.5} />
+         </div>
+         <p className="text-lg font-medium text-slate-700 dark:text-slate-300 mb-2">No statistics yet</p>
          <p className="text-[14px] text-slate-500 dark:text-slate-500 max-w-sm mx-auto">
            Upload bookmark files to see merge statistics and insights about your collection.
          </p>
@@ -54,29 +48,53 @@ export function StatsPanel({ mergeResult }: StatsPanelProps) {
      );
    }
 
-  return (
-    <div className="premium-card p-6 md:p-8">
-      <h2 className="mb-6 text-xl font-bold tracking-tight text-slate-900 dark:text-white md:text-2xl">
-        Statistics
-      </h2>
+   return (
+     <div className="premium-card p-6 md:p-8">
+       <h2 className="mb-6 text-xl font-bold tracking-tight text-slate-900 dark:text-white md:text-2xl">
+         Statistics
+       </h2>
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-        <StatPill value={mergeResult.stats.totalInputBookmarks} label="Total input" variant="light" />
-        <StatPill value={mergeResult.stats.uniqueBookmarks} label="Unique" variant="navy" />
-        <StatPill value={mergeResult.stats.removedDuplicates} label="Duplicates" variant="light" />
-        <StatPill value={mergeResult.stats.similarBookmarksFound} label="Similar found" variant="light" />
-      </div>
+       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+         <StatPill 
+           value={mergeResult.stats.totalInputBookmarks} 
+           label="Total Input" 
+           icon={Database}
+           colorClass="text-blue-600 bg-blue-50 dark:bg-blue-900/20"
+           bgClass="bg-blue-50/50 dark:bg-blue-950/10 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+         />
+         <StatPill 
+           value={mergeResult.stats.uniqueBookmarks} 
+           label="Unique" 
+           icon={GitMerge}
+           colorClass="text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20"
+           bgClass="bg-emerald-50/50 dark:bg-emerald-950/10 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+         />
+         <StatPill 
+           value={mergeResult.stats.removedDuplicates} 
+           label="Duplicates Removed" 
+           icon={TrendingUp}
+           colorClass="text-orange-600 bg-orange-50 dark:bg-orange-900/20"
+           bgClass="bg-orange-50/50 dark:bg-orange-950/10 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors"
+         />
+         <StatPill 
+           value={mergeResult.stats.similarBookmarksFound} 
+           label="Similar Found" 
+           icon={BarChart3}
+           colorClass="text-purple-600 bg-purple-50 dark:bg-purple-900/20"
+           bgClass="bg-purple-50/50 dark:bg-purple-950/10 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors"
+         />
+       </div>
 
-      {mergeResult.sourceFiles.length > 0 && (
-        <div className="mt-6 rounded-2xl border border-slate-100 bg-slate-50/50 px-5 py-4 dark:border-white/[0.06] dark:bg-white/[0.03]">
-          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400 dark:text-slate-500">
-            Sources
-          </p>
-          <p className="mt-1 text-[14px] font-medium text-slate-700 dark:text-slate-300">
-            {mergeResult.sourceFiles.join(' · ')}
-          </p>
-        </div>
-      )}
-    </div>
-  );
-}
+       {mergeResult.sourceFiles.length > 0 && (
+         <div className="mt-6 rounded-2xl border border-slate-100/50 bg-gradient-to-r from-slate-50 to-slate-50/50 px-5 py-4 dark:border-white/[0.06] dark:from-white/[0.03] dark:to-transparent">
+           <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400 dark:text-slate-500">
+             Sources
+           </p>
+           <p className="mt-1 text-[14px] font-medium text-slate-700 dark:text-slate-300">
+             {mergeResult.sourceFiles.join(' · ')}
+           </p>
+         </div>
+       )}
+     </div>
+   );
+ }

@@ -26,39 +26,38 @@ function parseNode(dtElement: Element, sourceFile: string, parentFolder: string)
     }
   }
   
-  if (h3) {
-    // It's a folder
-    const folderName = h3.textContent || 'Untitled Folder';
-    const node: BookmarkNode = {
-      id: generateId(),
-      type: 'folder',
-      title: folderName,
-      addDate: parseDate(h3.getAttribute('add_date')),
-      lastModified: parseDate(h3.getAttribute('last_modified')),
-      sourceFile,
-      originalFolder: parentFolder,
-      children: [],
-    };
-    
-    // Find the associated DL - it should be the next DL sibling
-    let sibling = dtElement.nextElementSibling;
-    while (sibling) {
-      if (sibling.tagName === 'DL') {
-        // Found the DL for this folder
-        for (let i = 0; i < sibling.children.length; i++) {
-          const child = sibling.children[i];
-          if (child.tagName === 'DT') {
-            const childNode = parseNode(child, sourceFile, `${parentFolder}/${folderName}`);
-            if (childNode) node.children!.push(childNode);
+    if (h3) {
+      // It's a folder
+      const folderName = h3.textContent || 'Untitled Folder';
+      const node: BookmarkNode = {
+        id: generateId(),
+        type: 'folder',
+        title: folderName,
+        addDate: parseDate(h3.getAttribute('add_date')),
+        lastModified: parseDate(h3.getAttribute('last_modified')),
+        sourceFile,
+        originalFolder: parentFolder,
+        children: [],
+      };
+      
+      // Find the associated DL - it's a child of the DT element
+      for (let i = 0; i < dtElement.children.length; i++) {
+        const child = dtElement.children[i];
+        if (child.tagName === 'DL') {
+          // Found the DL for this folder
+          for (let j = 0; j < child.children.length; j++) {
+            const grandChild = child.children[j];
+            if (grandChild.tagName === 'DT') {
+              const childNode = parseNode(grandChild, sourceFile, `${parentFolder}/${folderName}`);
+              if (childNode) node.children!.push(childNode);
+            }
           }
+          break;
         }
-        break;
       }
-      sibling = sibling.nextElementSibling;
-    }
-    
-    return node;
-  } else if (a) {
+      
+      return node;
+    } else if (a) {
     // It's a bookmark
     return {
       id: generateId(),
@@ -87,18 +86,33 @@ export function parseNetscapeHTML(content: string, filename: string): ParsedFile
     children: [],
   };
   
-  // Find all DL elements and process the first one (root)
-  const allDLs = doc.querySelectorAll('dl');
-  if (allDLs.length > 0) {
-    const rootDL = allDLs[0];
-    for (let i = 0; i < rootDL.children.length; i++) {
-      const child = rootDL.children[i];
-      if (child.tagName === 'DT') {
-        const node = parseNode(child, filename, 'Root');
-        if (node) root.children!.push(node);
-      }
-    }
-  }
+   // Find all DL elements and process the first one (root)
+   const allDLs = doc.querySelectorAll('dl');
+   if (allDLs.length > 0) {
+     const rootDL = allDLs[0];
+     // Collect all DT elements that are direct children of rootDL 
+     // or direct children of a <p> element that is a direct child of rootDL
+     const dtElements = [];
+     for (let i = 0; i < rootDL.children.length; i++) {
+       const child = rootDL.children[i];
+       if (child.tagName.toUpperCase() === 'DT') {
+         dtElements.push(child);
+       } else if (child.tagName.toUpperCase() === 'P') {
+         // If it's a <p> element, check its children for DT elements
+         for (let j = 0; j < child.children.length; j++) {
+           const grandChild = child.children[j];
+           if (grandChild.tagName.toUpperCase() === 'DT') {
+             dtElements.push(grandChild);
+           }
+         }
+       }
+     }
+     
+     for (const dtElement of dtElements) {
+       const node = parseNode(dtElement, filename, 'Root');
+       if (node) root.children!.push(node);
+     }
+   }
   
   // Calculate stats
   let totalBookmarks = 0;

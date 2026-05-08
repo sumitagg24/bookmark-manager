@@ -401,6 +401,10 @@ shortcuts: new Map([
       if (!mergeResult) return false;
       const md = generateMarkdownExport(mergeResult.root);
       try {
+        if (!navigator.clipboard?.writeText) {
+          // Clipboard API not available
+          return false;
+        }
         await navigator.clipboard.writeText(md);
         return true;
       } catch {

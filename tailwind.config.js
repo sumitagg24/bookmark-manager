@@ -10,19 +10,24 @@ export default {
       fontFamily: {
         sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
       },
-      colors: {
-        premium: {
-          canvas: '#dbeaf0',
-          mist: '#f4fafc',
-          orange: '#ff5c28',
-          'orange-hover': '#ff7347',
-          'orange-soft': '#fff0eb',
-          navy: '#142239',
-          'navy-mid': '#1e3354',
-          teal: '#7dd3e8',
-          'teal-deep': '#5ab8d0',
-        },
-      },
+       colors: {
+         premium: {
+           canvas: '#dbeaf0',
+           mist: '#f4fafc',
+           orange: '#ff5c28',
+           'orange-hover': '#ff7347',
+           'orange-soft': '#fff0eb',
+           navy: '#142239',
+           'navy-mid': '#1e3354',
+           teal: '#7dd3e8',
+           'teal-deep': '#5ab8d0',
+         },
+         blink: {
+           yellow: '#e5ff47',
+           dark: '#0a0a0a',
+           card: '#111111',
+         },
+       },
       boxShadow: {
         premium:
           '0 12px 48px -12px rgba(20, 34, 57, 0.14), 0 4px 16px -4px rgba(20, 34, 57, 0.06)',
