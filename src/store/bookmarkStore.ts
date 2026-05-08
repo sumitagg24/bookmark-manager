@@ -46,16 +46,15 @@ export const useBookmarkStore = create<AppState>()(
     searchHistory: [],
     tags: new Map(),
     backups: [],
-    shortcuts: new Map([
-      ['ctrl-z', { id: 'undo', key: 'Ctrl+Z', action: 'undo', description: 'Undo', customizable: false }],
-      ['ctrl-shift-z', { id: 'redo', key: 'Ctrl+Shift+Z', action: 'redo', description: 'Redo', customizable: false }],
-      ['ctrl-f', { id: 'search', key: 'Ctrl+F', action: 'search', description: 'Search', customizable: false }],
-      ['ctrl-t', { id: 'favorite', key: 'Ctrl+T', action: 'toggleFavorite', description: 'Toggle Favorite', customizable: true }],
-      ['ctrl-shift-n', { id: 'note', key: 'Ctrl+Shift+N', action: 'addNote', description: 'Add Note', customizable: true }],
-      ['ctrl-shift-t', { id: 'tag', key: 'Ctrl+Shift+T', action: 'addTag', description: 'Add Tag', customizable: true }],
-      ['ctrl-b', { id: 'bulk', key: 'Ctrl+B', action: 'bulkSelect', description: 'Bulk Select', customizable: true }],
-      ['ctrl-shift-s', { id: 'shortcuts', key: 'Ctrl+Shift+S', action: 'showShortcuts', description: 'Show Shortcuts', customizable: false }],
-    ]),
+shortcuts: new Map([
+       ['ctrl-z', { id: 'undo', key: 'Ctrl+Z', action: 'undo', description: 'Undo', customizable: false }],
+       ['ctrl-shift-z', { id: 'redo', key: 'Ctrl+Shift+Z', action: 'redo', description: 'Redo', customizable: false }],
+       ['ctrl-f', { id: 'search', key: 'Ctrl+F', action: 'search', description: 'Search', customizable: false }],
+       ['ctrl-t', { id: 'favorite', key: 'Ctrl+T', action: 'toggleFavorite', description: 'Toggle Favorite', customizable: true }],
+       ['ctrl-shift-n', { id: 'note', key: 'Ctrl+Shift+N', action: 'addNote', description: 'Add Note', customizable: true }],
+       ['ctrl-shift-t', { id: 'tag', key: 'Ctrl+Shift+T', action: 'addTag', description: 'Add Tag', customizable: true }],
+       ['ctrl-b', { id: 'bulk', key: 'Ctrl+B', action: 'bulkSelect', description: 'Bulk Select', customizable: true }],
+     ]),
 
     addFiles: async (files: File[]) => {
       set((state) => {
