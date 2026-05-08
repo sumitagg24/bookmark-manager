@@ -1,15 +1,28 @@
 import { useState, type FC } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, AlertCircle, Check, X, Radio, Trash2 } from 'lucide-react';
+import { ChevronDown, AlertCircle, Check, X, Radio, Trash2, Globe } from 'lucide-react';
 import { useBookmarkStore } from '../store/bookmarkStore';
+import { getRootUrl, hasPath, getDefaultTitle } from '../core/urlUtils';
+
+function formatFolderPath(path?: string): string {
+  if (!path) return '';
+  return path.replace(/^Root\//, '').replace(/\//g, ' / ');
+}
 
 export const SimilarBookmarksReport: FC = () => {
-  const { mergeResult, acceptSimilarBookmarks, discardSimilarBookmarks, discardBothSimilarBookmarks, selectBookmarkToKeep } = useBookmarkStore();
+  const { mergeResult, updateMergeNode, acceptSimilarBookmarks, discardSimilarBookmarks, discardBothSimilarBookmarks, selectBookmarkToKeep } = useBookmarkStore();
   const [openId, setOpenId] = useState<string | null>(null);
 
   if (!mergeResult || mergeResult.similarBookmarks.length === 0) return null;
 
   const groups = mergeResult.similarBookmarks;
+
+  function handleStripToRoot(bookmarkId: string, url: string) {
+    try {
+      const rootUrl = new URL(url).origin + '/';
+      updateMergeNode(bookmarkId, { url: rootUrl, title: getDefaultTitle(url) });
+    } catch { /* ignore */ }
+  }
 
   return (
     <div className="premium-card p-6 md:p-8">
@@ -111,8 +124,29 @@ export const SimilarBookmarksReport: FC = () => {
                               <p className="font-semibold text-slate-800 dark:text-slate-200">
                                 {g.canonical.title}
                               </p>
-                              <p className="break-all text-[12px] text-slate-500 mt-1">{g.canonical.url}</p>
-                              <p className="text-[11px] text-slate-400">{g.canonical.sourceFile}</p>
+                              <div className="flex items-start gap-1.5 mt-1">
+                                <p className="break-all text-[12px] text-slate-500 flex-1">{g.canonical.url}</p>
+                                {g.canonical.url && hasPath(g.canonical.url) && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => { e.stopPropagation(); handleStripToRoot(g.canonical.id, g.canonical.url!); }}
+                                    className="shrink-0 mt-0.5 rounded-lg p-1 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 hover:scale-110 transition-all dark:hover:bg-emerald-950/30 dark:hover:text-emerald-400"
+                                    title={`Landing page: ${getRootUrl(g.canonical.url)}`}
+                                    aria-label="Strip to landing page"
+                                  >
+                                    <Globe className="h-3.5 w-3.5" />
+                                  </button>
+                                )}
+                              </div>
+                              <div className="mt-1 flex items-center gap-2 text-[11px]">
+                                <span className="text-slate-400">{g.canonical.sourceFile}</span>
+                                {formatFolderPath(g.canonical.originalFolder) && (
+                                  <span className="text-premium-navy dark:text-cyan-400 flex items-center gap-1">
+                                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
+                                    {formatFolderPath(g.canonical.originalFolder)}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -145,8 +179,29 @@ export const SimilarBookmarksReport: FC = () => {
                                     <p className="font-semibold text-slate-800 dark:text-slate-200">
                                       {s.title}
                                     </p>
-                                    <p className="break-all text-[12px] text-slate-500 mt-1">{s.url}</p>
-                                    <p className="text-[11px] text-slate-400">{s.sourceFile}</p>
+                                    <div className="flex items-start gap-1.5 mt-1">
+                                      <p className="break-all text-[12px] text-slate-500 flex-1">{s.url}</p>
+                                      {s.url && hasPath(s.url) && (
+                                        <button
+                                          type="button"
+                                          onClick={(e) => { e.stopPropagation(); handleStripToRoot(s.id, s.url!); }}
+                                          className="shrink-0 mt-0.5 rounded-lg p-1 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 hover:scale-110 transition-all dark:hover:bg-emerald-950/30 dark:hover:text-emerald-400"
+                                          title={`Landing page: ${getRootUrl(s.url)}`}
+                                          aria-label="Strip to landing page"
+                                        >
+                                          <Globe className="h-3.5 w-3.5" />
+                                        </button>
+                                      )}
+                                    </div>
+                                    <div className="mt-1 flex items-center gap-2 text-[11px]">
+                                      <span className="text-slate-400">{s.sourceFile}</span>
+                                      {formatFolderPath(s.originalFolder) && (
+                                        <span className="text-premium-navy dark:text-cyan-400 flex items-center gap-1">
+                                          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
+                                          {formatFolderPath(s.originalFolder)}
+                                        </span>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
                               </div>
@@ -155,7 +210,7 @@ export const SimilarBookmarksReport: FC = () => {
                         )}
                       </div>
 
-                      {isPending && (
+                      {(isPending || isDiscarded) && (
                         <div className="flex gap-2 pt-2">
                           <button
                             type="button"

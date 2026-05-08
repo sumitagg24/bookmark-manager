@@ -78,20 +78,28 @@ export const DuplicateReport: FC = () => {
                              Kept version
                            </p>
                          </div>
-                         <div className="rounded-xl bg-white dark:bg-slate-800 p-3 border border-slate-200/50 dark:border-white/[0.06]">
-                           <Favicon url={g.canonical.url} title={g.canonical.title} size="sm" />
-                           <p className="mt-1.5 break-all font-medium text-slate-800 dark:text-slate-200">
-                             {g.canonical.url}
-                           </p>
-                           <p className="mt-1 text-[12px] text-slate-500 dark:text-slate-400">
-                             {g.canonical.sourceFile}
-                           </p>
-                           {g.location && (
-                             <p className="mt-1 text-[11px] text-premium-navy dark:text-cyan-400">
-                               Folder: {g.location}
-                             </p>
-                           )}
-                         </div>
+                          <div className="rounded-xl bg-white dark:bg-slate-800 p-3 border border-slate-200/50 dark:border-white/[0.06]">
+                            <div className="flex items-center gap-2.5">
+                              <Favicon url={g.canonical.url} title={g.canonical.title} size="sm" />
+                              <p className="font-semibold text-slate-800 dark:text-slate-200">
+                                {g.canonical.title}
+                              </p>
+                            </div>
+                            <p className="mt-1.5 break-all font-medium text-slate-800 dark:text-slate-200">
+                              {g.canonical.url}
+                            </p>
+                            <div className="mt-1 flex items-center gap-2 text-[12px]">
+                              <span className="text-slate-500 dark:text-slate-400">
+                                {g.canonical.sourceFile}
+                              </span>
+                              {g.location && (
+                                <span className="text-premium-navy dark:text-cyan-400 flex items-center gap-1">
+                                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
+                                  {g.location}
+                                </span>
+                              )}
+                            </div>
+                          </div>
                        </div>
                        <div>
                          <div className="mb-2 flex items-center gap-2">
@@ -108,21 +116,24 @@ export const DuplicateReport: FC = () => {
                                animate={{ opacity: 1 }}
                                className="rounded-xl border-l-3 border-red-400 bg-white/60 p-3 pl-3 dark:bg-black/20"
                              >
-                               <div className="flex items-start gap-2.5">
-                                 <Favicon url={d.url} title={d.title} size="sm" />
-                                 <div className="min-w-0 flex-1">
-                                   <p className="font-semibold text-slate-800 dark:text-slate-200">
-                                     {d.title}
-                                   </p>
-                                   <p className="break-all text-[12px] text-slate-500">{d.url}</p>
-                                   <div className="mt-1 flex items-center gap-2 text-[11px]">
-                                     <span className="text-slate-400">{d.sourceFile}</span>
-                                     {d.originalFolder && (
-                                       <span className="text-premium-navy dark:text-cyan-400">• {d.originalFolder}</span>
-                                     )}
-                                   </div>
-                                 </div>
-                               </div>
+                                <div className="flex items-start gap-2.5">
+                                  <Favicon url={d.url} title={d.title} size="sm" />
+                                  <div className="min-w-0 flex-1">
+                                    <p className="font-semibold text-slate-800 dark:text-slate-200">
+                                      {d.title}
+                                    </p>
+                                    <p className="break-all text-[12px] text-slate-500">{d.url}</p>
+                                    <div className="mt-1 flex items-center gap-2 text-[12px]">
+                                      <span className="text-slate-400">{d.sourceFile}</span>
+                                      {d.originalFolder && (
+                                        <span className="text-premium-navy dark:text-cyan-400 flex items-center gap-1">
+                                          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
+                                          {d.originalFolder}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
                              </motion.li>
                            ))}
                          </ul>
