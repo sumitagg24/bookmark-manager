@@ -62,21 +62,28 @@ interface TreeNodeProps {
    selectedIds: Set<string>;
    onToggleSelection: (id: string) => void;
    query?: string;
+   draggedNodeId?: string | null;
+   onDragStart?: (nodeId: string) => void;
+   onDragOver?: (nodeId: string) => void;
+   onDrop?: (nodeId: string, targetParentId: string) => void;
+   onDragEnd?: () => void;
  }
 
-const TreeNode: FC<TreeNodeProps> = ({ node, depth = 0, selectedIds, onToggleSelection, query = '' }) => {
-   const [isOpen, setIsOpen] = useState(true);
-   const [editing, setEditing] = useState(false);
-   const [draftTitle, setDraftTitle] = useState('');
-   const [draftUrl, setDraftUrl] = useState('');
-   const [showNotes, setShowNotes] = useState(false);
-   const isSelected = selectedIds.has(node.id);
+const TreeNode: FC<TreeNodeProps> = ({ node, depth = 0, selectedIds, onToggleSelection, query = '', draggedNodeId, onDragStart, onDragOver, onDrop, onDragEnd }) => {
+    const [isOpen, setIsOpen] = useState(true);
+    const [editing, setEditing] = useState(false);
+    const [draftTitle, setDraftTitle] = useState('');
+    const [draftUrl, setDraftUrl] = useState('');
+    const [showNotes, setShowNotes] = useState(false);
+    const isSelected = selectedIds.has(node.id);
+    const isDragging = draggedNodeId === node.id;
+    const isDropTarget = draggedNodeId && draggedNodeId !== node.id && node.type === 'folder';
 
-   const updateMergeNode = useBookmarkStore((s) => s.updateMergeNode);
-   const removeMergeNode = useBookmarkStore((s) => s.removeMergeNode);
-   const addMergeFolderToFolder = useBookmarkStore((s) => s.addMergeFolderToFolder);
-   const addMergeBookmarkToFolder = useBookmarkStore((s) => s.addMergeBookmarkToFolder);
-   const toggleSelection = useBookmarkStore((s) => s.toggleSelection);
+    const updateMergeNode = useBookmarkStore((s) => s.updateMergeNode);
+    const removeMergeNode = useBookmarkStore((s) => s.removeMergeNode);
+    const addMergeFolderToFolder = useBookmarkStore((s) => s.addMergeFolderToFolder);
+    const addMergeBookmarkToFolder = useBookmarkStore((s) => s.addMergeBookmarkToFolder);
+    const toggleSelection = useBookmarkStore((s) => s.toggleSelection);
 
   const startEdit = useCallback(() => {
     setDraftTitle(node.title);
@@ -139,6 +146,35 @@ const TreeNode: FC<TreeNodeProps> = ({ node, depth = 0, selectedIds, onToggleSel
     [node.id, removeMergeNode]
   );
 
+  const handleDragStart = useCallback((e: React.DragEvent) => {
+    e.stopPropagation();
+    onDragStart?.(node.id);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', node.id);
+  }, [node.id, onDragStart]);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (node.type === 'folder' && node.id !== draggedNodeId) {
+      e.dataTransfer.dropEffect = 'move';
+      onDragOver?.(node.id);
+    }
+  }, [node.id, node.type, draggedNodeId, onDragOver]);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const sourceNodeId = e.dataTransfer.getData('text/plain');
+    if (sourceNodeId && sourceNodeId !== node.id && node.type === 'folder') {
+      onDrop?.(sourceNodeId, node.id);
+    }
+  }, [node.id, node.type, onDrop]);
+
+  const handleDragEnd = useCallback(() => {
+    onDragEnd?.();
+  }, [onDragEnd]);
+
   const pad = { paddingLeft: `${depth * 20 + 8}px` };
 
   const inputCls =
@@ -187,10 +223,15 @@ const TreeNode: FC<TreeNodeProps> = ({ node, depth = 0, selectedIds, onToggleSel
       transition={{ duration: 0.15 }}
     >
       <div
+        draggable
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
         className={`group flex items-center gap-2 rounded-xl px-2 py-2 transition-all duration-200 hover:bg-slate-50 dark:hover:bg-white/[0.04] ${
           isSelected
             ? 'bg-premium-orange/8 border border-premium-orange/20 shadow-sm'
-            : ''
+            : isDragging
+              ? 'opacity-50 scale-95'
+              : ''
         }`}
         style={pad}
       >
@@ -315,9 +356,9 @@ const TreeNode: FC<TreeNodeProps> = ({ node, depth = 0, selectedIds, onToggleSel
                 transition={{ duration: 0.2 }}
                 className="ml-3 mt-1 overflow-hidden border-l-2 border-slate-100 pl-2 dark:border-white/10"
               >
-                {node.children?.map((child) => (
-                  <TreeNode key={child.id} node={child} depth={depth + 1} selectedIds={selectedIds} onToggleSelection={onToggleSelection} query={query} />
-                ))}
+                 {node.children?.map((child) => (
+                   <TreeNode key={child.id} node={child} depth={depth + 1} selectedIds={selectedIds} onToggleSelection={onToggleSelection} query={query} draggedNodeId={draggedNodeId} onDragStart={onDragStart} onDragOver={onDragOver} onDrop={onDrop} onDragEnd={onDragEnd} />
+                 ))}
               </motion.div>
             )}
           </AnimatePresence>
@@ -325,20 +366,29 @@ const TreeNode: FC<TreeNodeProps> = ({ node, depth = 0, selectedIds, onToggleSel
       );
     }
 
-      return (
-       <motion.div
-         initial={{ opacity: 0, y: 2 }}
-         animate={{ opacity: 1, y: 0 }}
-         transition={{ duration: 0.15 }}
-       >
-         <div
-           className={`group flex items-center gap-2 rounded-xl px-2 py-2 transition-all duration-200 hover:bg-slate-50 dark:hover:bg-white/[0.04] ${
-             isSelected
-               ? 'bg-premium-orange/8 border border-premium-orange/20 shadow-sm'
-               : ''
-           }`}
-           style={pad}
+       return (
+         <motion.div
+           initial={{ opacity: 0, y: 2 }}
+           animate={{ opacity: 1, y: 0 }}
+           transition={{ duration: 0.15 }}
          >
+            <div
+              draggable
+              onDragStart={handleDragStart}
+              className={`group flex items-center gap-2 rounded-xl px-2 py-2 transition-all duration-200 hover:bg-slate-50 dark:hover:bg-white/[0.04] ${
+                isSelected
+                  ? 'bg-premium-orange/8 border border-premium-orange/20 shadow-sm'
+                  : isDragging
+                    ? 'opacity-50 scale-95'
+                    : isDropTarget
+                      ? 'bg-emerald-50/80 border-2 border-emerald-400 shadow-md dark:bg-emerald-900/20'
+                      : ''
+              }`}
+              style={pad}
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
+              onDragEnd={handleDragEnd}
+            >
           <input
             type="checkbox"
             checked={isSelected}
@@ -427,7 +477,7 @@ const TreeNode: FC<TreeNodeProps> = ({ node, depth = 0, selectedIds, onToggleSel
                className="overflow-hidden"
              >
                 {node.children?.map((child) => (
-                  <TreeNode key={child.id} node={child} depth={depth + 1} selectedIds={selectedIds} onToggleSelection={onToggleSelection} query={query} />
+                  <TreeNode key={child.id} node={child} depth={depth + 1} selectedIds={selectedIds} onToggleSelection={onToggleSelection} query={query} draggedNodeId={draggedNodeId} onDragStart={onDragStart} onDragOver={onDragOver} onDrop={onDrop} onDragEnd={onDragEnd} />
                 ))}
              </motion.div>
            )}
@@ -440,20 +490,22 @@ const TreeNode: FC<TreeNodeProps> = ({ node, depth = 0, selectedIds, onToggleSel
 };
 
 export const BookmarkTree: FC = () => {
-   const mergeResult = useBookmarkStore((s) => s.mergeResult);
-   const addMergeFolderAtRoot = useBookmarkStore((s) => s.addMergeFolderAtRoot);
-   const addMergeBookmarkAtRoot = useBookmarkStore((s) => s.addMergeBookmarkAtRoot);
-   const undo = useBookmarkStore((s) => s.undo);
-   const redo = useBookmarkStore((s) => s.redo);
-   const canUndo = useBookmarkStore((s) => s.canUndo);
-   const canRedo = useBookmarkStore((s) => s.canRedo);
-   const selectedIds = useBookmarkStore((s) => s.selectedIds);
-   const toggleSelection = useBookmarkStore((s) => s.toggleSelection);
-   const selectAll = useBookmarkStore((s) => s.selectAll);
-   const clearSelection = useBookmarkStore((s) => s.clearSelection);
-   const [query, setQuery] = useState('');
+    const mergeResult = useBookmarkStore((s) => s.mergeResult);
+    const addMergeFolderAtRoot = useBookmarkStore((s) => s.addMergeFolderAtRoot);
+    const addMergeBookmarkAtRoot = useBookmarkStore((s) => s.addMergeBookmarkAtRoot);
+    const moveNode = useBookmarkStore((s) => s.moveNode);
+    const undo = useBookmarkStore((s) => s.undo);
+    const redo = useBookmarkStore((s) => s.redo);
+    const canUndo = useBookmarkStore((s) => s.canUndo);
+    const canRedo = useBookmarkStore((s) => s.canRedo);
+    const selectedIds = useBookmarkStore((s) => s.selectedIds);
+    const toggleSelection = useBookmarkStore((s) => s.toggleSelection);
+    const selectAll = useBookmarkStore((s) => s.selectAll);
+    const clearSelection = useBookmarkStore((s) => s.clearSelection);
+    const [query, setQuery] = useState('');
+    const [draggedNodeId, setDraggedNodeId] = useState<string | null>(null);
 
-   // Keyboard shortcuts
+    // Keyboard shortcuts
    useEffect(() => {
      const handleKeyDown = (e: KeyboardEvent) => {
        const isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform);
@@ -482,16 +534,34 @@ window.addEventListener('keydown', handleKeyDown as unknown as EventListener);
       return () => window.removeEventListener('keydown', handleKeyDown as unknown as EventListener);
    }, [undo, redo, canUndo, canRedo, mergeResult, selectAll, clearSelection]);
 
-   const displayRoot = useMemo(() => {
-     if (!mergeResult) return null;
-     const q = query.trim();
-     if (!q) return mergeResult.root;
-     return filterBookmarkTree(mergeResult.root, q);
+    const displayRoot = useMemo(() => {
+      if (!mergeResult) return null;
+      const q = query.trim();
+      if (!q) return mergeResult.root;
+      return filterBookmarkTree(mergeResult.root, q);
     }, [mergeResult, query]);
 
     const children = displayRoot?.children ?? [];
     const hasNoMergeResult = !mergeResult;
     const emptySearch = query.trim().length > 0 && children.length === 0;
+
+    const handleDrop = useCallback((sourceId: string, targetParentId: string) => {
+      moveNode(sourceId, targetParentId);
+      setDraggedNodeId(null);
+    }, [moveNode]);
+
+    const handleDragOver = useCallback((nodeId: string) => {
+      // Future: track hovered node for visual feedback
+      void nodeId;
+    }, []);
+
+    const handleDragStart = useCallback((nodeId: string) => {
+      setDraggedNodeId(nodeId);
+    }, []);
+
+    const handleDragEnd = useCallback(() => {
+      setDraggedNodeId(null);
+    }, []);
 
     return (
       <div className="premium-card flex max-h-[min(70vh,720px)] flex-col gap-5 p-5 md:p-6 lg:p-7">
@@ -583,7 +653,7 @@ window.addEventListener('keydown', handleKeyDown as unknown as EventListener);
               </p>
             </div>
           ) : children.length > 0 ? (
-            children.map((child) => <TreeNode key={child.id} node={child} depth={0} selectedIds={selectedIds} onToggleSelection={toggleSelection} query={query} />)
+            children.map((child) => <TreeNode key={child.id} node={child} depth={0} selectedIds={selectedIds} onToggleSelection={toggleSelection} query={query} draggedNodeId={draggedNodeId} onDragStart={handleDragStart} onDragOver={handleDragOver} onDrop={handleDrop} onDragEnd={handleDragEnd} />)
           ) : (
             <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
               <div className="relative mb-4">

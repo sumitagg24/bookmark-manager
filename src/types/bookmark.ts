@@ -28,6 +28,7 @@ export interface HistoryAction {
   timestamp: number;
   nodeId?: string;
   parentId?: string;
+  oldParentId?: string; // For move actions - the original parent before move
   previousState?: BookmarkNode;
   newState?: BookmarkNode;
   description: string;
@@ -154,9 +155,10 @@ export interface AppState {
   dismissSessionNotice: () => void;
   addMergeFolderAtRoot: () => void;
   addMergeBookmarkAtRoot: () => void;
-  addMergeFolderToFolder: (parentId: string) => void;
-  addMergeBookmarkToFolder: (parentId: string) => void;
-  copyMarkdownToClipboard: () => Promise<boolean>;
+   addMergeFolderToFolder: (parentId: string) => void;
+   addMergeBookmarkToFolder: (parentId: string) => void;
+   moveNode: (nodeId: string, newParentId: string) => void;
+   copyMarkdownToClipboard: () => Promise<boolean>;
   acceptSimilarBookmarks: (groupIndex: number) => void;
   discardSimilarBookmarks: (groupIndex: number) => void;
   discardBothSimilarBookmarks: (groupIndex: number) => void;

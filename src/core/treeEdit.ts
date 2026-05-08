@@ -38,3 +38,37 @@ export function countBookmarksInTree(root: BookmarkNode): number {
   walk(root);
   return n;
 }
+
+export function moveNode(root: BookmarkNode, nodeId: string, newParentId: string): boolean {
+  const nodeToMove = findNodeById(root, nodeId);
+  if (!nodeToMove || nodeId === newParentId) return false;
+
+  // Cannot move root or into itself or its own descendants
+  if (nodeToMove.type === 'root') return false;
+  
+  const newParent = findNodeById(root, newParentId);
+  if (!newParent || newParent.type !== 'folder') return false;
+
+  // Check if nodeToMove is an ancestor of newParent (would create cycle)
+  let current: BookmarkNode | null = newParent;
+  while (current) {
+    if (current.id === nodeId) return false;
+    const parentSlot = findParentSlot(root, current.id);
+    current = parentSlot?.parent || null;
+  }
+
+  // Remove from old parent
+  const oldParentSlot = findParentSlot(root, nodeId);
+  if (!oldParentSlot) return false;
+
+  const { parent: oldParent, index: oldIndex } = oldParentSlot;
+  oldParent.children?.splice(oldIndex, 1);
+  
+  // Ensure children array exists on new parent
+  if (!newParent.children) newParent.children = [];
+  
+  // Add to new parent at the end
+  newParent.children.push(nodeToMove);
+  
+  return true;
+}

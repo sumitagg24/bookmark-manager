@@ -396,7 +396,63 @@ shortcuts: new Map([
       });
     },
 
-    copyMarkdownToClipboard: async () => {
+     moveNode: (nodeId: string, newParentId: string) => {
+       set((state) => {
+         const root = state.mergeResult?.root;
+         if (!root) return;
+
+         // Validate the move
+         const nodeToMove = findNodeById(root, nodeId);
+         if (!nodeToMove || nodeToMove.type === 'root') return;
+
+         const newParent = findNodeById(root, newParentId);
+         if (!newParent || newParent.type !== 'folder') return;
+
+         // Prevent moving into self or own descendants
+         if (nodeId === newParentId) return;
+         let current: BookmarkNode | null = newParent;
+         while (current) {
+           if (current.id === nodeId) return;
+           const parentSlot = findParentSlot(root, current.id);
+           current = parentSlot?.parent || null;
+         }
+
+         // Capture old state for undo
+         const oldParentSlot = findParentSlot(root, nodeId);
+         if (!oldParentSlot) return;
+         const oldParent = oldParentSlot.parent;
+         const oldIndex = oldParentSlot.index;
+
+         // Remove from old parent
+         oldParent.children?.splice(oldIndex, 1);
+         if (oldParent.children?.length === 0) delete oldParent.children;
+
+         // Add to new parent
+         if (!newParent.children) newParent.children = [];
+         newParent.children.push(nodeToMove);
+
+        // Add to history
+        state.history = state.history.slice(0, state.historyIndex + 1);
+        state.history.push({
+          type: 'move',
+          timestamp: Date.now(),
+          nodeId,
+          parentId: newParentId, // new parent
+          oldParentId: oldParent.id, // old parent for undo
+          description: `Moved "${nodeToMove.title}" to "${newParent.title}"`,
+        });
+        state.historyIndex++;
+
+         if (state.history.length > 20) {
+           state.history = state.history.slice(-20);
+           state.historyIndex = state.history.length - 1;
+         }
+
+         state.mergeResult!.stats.uniqueBookmarks = countBookmarksInTree(root);
+       });
+     },
+
+     copyMarkdownToClipboard: async () => {
       const { mergeResult } = get();
       if (!mergeResult) return false;
       const md = generateMarkdownExport(mergeResult.root);
@@ -516,12 +572,27 @@ shortcuts: new Map([
           if (slot && slot.parent.children) {
             slot.parent.children.splice(slot.index, 1);
           }
-        } else if (action.type === 'edit' && action.previousState && action.nodeId) {
-          const slot = findParentSlot(root, action.nodeId);
-          if (slot && slot.parent.children) {
-            slot.parent.children[slot.index] = JSON.parse(JSON.stringify(action.previousState));
-          }
-        }
+         } else if (action.type === 'edit' && action.previousState && action.nodeId) {
+           const slot = findParentSlot(root, action.nodeId);
+           if (slot && slot.parent.children) {
+             slot.parent.children[slot.index] = JSON.parse(JSON.stringify(action.previousState));
+           }
+         } else if (action.type === 'move' && action.nodeId && action.oldParentId) {
+           // Undo move: move node back to old parent
+           const node = findNodeById(root, action.nodeId);
+           const oldParent = findNodeById(root, action.oldParentId);
+           if (node && oldParent && node.type !== 'root' && oldParent.type === 'folder') {
+             // Remove from current parent
+             const currentSlot = findParentSlot(root, action.nodeId);
+             if (currentSlot && currentSlot.parent.children) {
+               currentSlot.parent.children.splice(currentSlot.index, 1);
+               if (currentSlot.parent.children.length === 0) delete currentSlot.parent.children;
+             }
+             // Add to old parent
+             if (!oldParent.children) oldParent.children = [];
+             oldParent.children.push(node);
+           }
+         }
 
         state.mergeResult.stats.uniqueBookmarks = countBookmarksInTree(root);
       });
@@ -547,12 +618,27 @@ shortcuts: new Map([
             if (!parent.children) parent.children = [];
             parent.children.push(JSON.parse(JSON.stringify(action.newState)));
           }
-        } else if (action.type === 'edit' && action.newState && action.nodeId) {
-          const slot = findParentSlot(root, action.nodeId);
-          if (slot && slot.parent.children) {
-            slot.parent.children[slot.index] = JSON.parse(JSON.stringify(action.newState));
-          }
-        }
+         } else if (action.type === 'edit' && action.newState && action.nodeId) {
+           const slot = findParentSlot(root, action.nodeId);
+           if (slot && slot.parent.children) {
+             slot.parent.children[slot.index] = JSON.parse(JSON.stringify(action.newState));
+           }
+         } else if (action.type === 'move' && action.nodeId && action.parentId) {
+           // Redo move: move node to new parent (the one stored in parentId)
+           const node = findNodeById(root, action.nodeId);
+           const newParent = findNodeById(root, action.parentId);
+           if (node && newParent && node.type !== 'root' && newParent.type === 'folder') {
+             // Remove from current parent
+             const currentSlot = findParentSlot(root, action.nodeId);
+             if (currentSlot && currentSlot.parent.children) {
+               currentSlot.parent.children.splice(currentSlot.index, 1);
+               if (currentSlot.parent.children.length === 0) delete currentSlot.parent.children;
+             }
+             // Add to new parent
+             if (!newParent.children) newParent.children = [];
+             newParent.children.push(node);
+           }
+         }
 
         state.mergeResult.stats.uniqueBookmarks = countBookmarksInTree(root);
       });
