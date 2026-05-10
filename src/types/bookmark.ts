@@ -213,4 +213,7 @@ export interface AppState {
   
   // Shortcuts
   updateShortcut: (shortcutId: string, newKey: string) => void;
+  
+  // Source Management
+  removeBySourceFile: (sourceFile: string) => void;
 }

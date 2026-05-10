@@ -1,4 +1,4 @@
-import { Library, BarChart3, FolderTree, Download, Star, Tag, Clock, HardDrive } from 'lucide-react';
+import { Library, BarChart3, FolderTree, Download, Star, Tag, Clock, HardDrive, ArrowUpDown } from 'lucide-react';
 import type { FC } from 'react';
 
 const items: { id: string; icon: typeof Library; label: string }[] = [
@@ -9,6 +9,7 @@ const items: { id: string; icon: typeof Library; label: string }[] = [
   { id: 'search-history', icon: Clock, label: 'Search History' },
   { id: 'stats', icon: BarChart3, label: 'Statistics' },
   { id: 'backup', icon: HardDrive, label: 'Backup & Restore' },
+  { id: 'folder-sort', icon: ArrowUpDown, label: 'Sort Folder' },
   { id: 'export', icon: Download, label: 'Export' },
 ];
 
@@ -28,6 +29,7 @@ const tooltipLabels: Record<string, string> = {
    'search-history': 'Search History',
    export: 'Export',
    backup: 'Backup & Restore',
+   'folder-sort': 'Sort Folder',
  };
 
 export const DashboardNav: FC<DashboardNavProps> = ({ activeId, onSelect, hasFiles }) => {

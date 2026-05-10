@@ -1045,6 +1045,33 @@ shortcuts: new Map([
         }
       });
     },
+
+    removeBySourceFile: (sourceFile: string) => {
+      set((state) => {
+        if (!state.mergeResult) return;
+
+        function removeFromNode(node: BookmarkNode): BookmarkNode | null {
+          if (node.type === 'bookmark') {
+            return node.sourceFile === sourceFile ? null : node;
+          }
+          if (node.type === 'folder' || node.type === 'root') {
+            const filteredChildren = (node.children ?? [])
+              .map(removeFromNode)
+              .filter((c): c is BookmarkNode => c !== null);
+            return { ...node, children: filteredChildren };
+          }
+          return node;
+        }
+
+        const newRoot = removeFromNode(state.mergeResult.root);
+        if (newRoot) {
+          state.mergeResult.root = newRoot;
+          state.mergeResult.sourceFiles = state.mergeResult.sourceFiles.filter(
+            (sf) => sf !== sourceFile
+          );
+        }
+      });
+    },
   }))
 );
 

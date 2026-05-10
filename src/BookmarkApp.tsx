@@ -15,6 +15,7 @@ import { TagsPanel } from './components/TagsPanel';
 import { SearchHistoryPanel } from './components/SearchHistoryPanel';
 import { FavoritesPanel } from './components/FavoritesPanel';
 import { BackupRestorePanel } from './components/BackupRestorePanel';
+import { FolderSortPanel } from './components/FolderSortPanel';
 import { OnboardingGuide } from './components/OnboardingGuide';
 import { useBookmarkStore } from './store/bookmarkStore';
 
@@ -156,6 +157,9 @@ function App() {
                 <AdvancedFeaturesPanel />
                 <section id="section-backup" className="scroll-mt-28">
                   <BackupRestorePanel />
+                </section>
+                <section id="section-folder-sort" className="scroll-mt-28">
+                  <FolderSortPanel />
                 </section>
                 <section id="section-export" className="scroll-mt-28">
                   <ExportPanel />
