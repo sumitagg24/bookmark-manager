@@ -40,10 +40,10 @@ const footerLinks = {
     { label: 'Contributing', href: 'https://github.com/sumitagg24/bookmark-manager' },
   ],
   resources: [
-    { label: 'Documentation', href: '#' },
+    { label: 'Documentation', href: '/docs' },
     { label: 'Changelog', href: 'https://github.com/sumitagg24/bookmark-manager' },
-    { label: 'Privacy', href: '#' },
-    { label: 'Terms', href: '#' },
+    { label: 'Privacy', href: '/privacy' },
+    { label: 'Terms', href: '/terms' },
   ],
 };
 
@@ -110,9 +110,15 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               {footerLinks.resources.map((link) => (
                 <li key={link.label}>
-                  <a href={link.href} className="text-gray-400 hover:text-white transition-colors">
-                    {link.label}
-                  </a>
+                  {link.href.startsWith('http') ? (
+                    <a href={link.href} className="text-gray-400 hover:text-white transition-colors" target="_blank" rel="noopener noreferrer">
+                      {link.label}
+                    </a>
+                  ) : (
+                    <Link to={link.href} className="text-gray-400 hover:text-white transition-colors">
+                      {link.label}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
