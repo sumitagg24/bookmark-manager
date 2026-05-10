@@ -1,8 +1,7 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Sparkles, ArrowRight, Heart } from 'lucide-react';
+import { Sparkles, ArrowRight, Star } from 'lucide-react';
 
-// GitHub icon inline (lucide-react doesn't export it in v1.7)
 function GithubIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
@@ -13,7 +12,7 @@ function GithubIcon({ className }: { className?: string }) {
 
 export function CTASection() {
   return (
-    <section className="py-24 sm:py-32 bg-gradient-to-br from-blue-50/50 via-purple-50/30 to-pink-50/50 dark:from-blue-900/20 dark:via-purple-900/10 dark:to-pink-900/20">
+    <section className="py-24 sm:py-32 bg-gradient-to-br from-yellow-50/50 via-amber-50/30 to-orange-50/50 dark:from-yellow-900/20 dark:via-amber-900/10 dark:to-orange-900/20">
       <div className="mx-auto max-w-4xl px-4 sm:px-6">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
@@ -21,7 +20,6 @@ export function CTASection() {
           viewport={{ once: true }}
           className="relative rounded-3xl sm:rounded-4xl overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-8 sm:p-12 md:p-16 shadow-2xl"
         >
-          {/* Shine effect */}
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-shine" />
           
           <div className="relative text-center">
@@ -33,8 +31,8 @@ export function CTASection() {
             >
               <div className="relative">
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 blur-xl" />
-                <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg">
-                  <Sparkles className="h-8 w-8 text-white" />
+                <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#e5ff47] to-amber-500 shadow-lg">
+                  <Sparkles className="h-8 w-8 text-gray-900" />
                 </div>
               </div>
             </motion.div>
@@ -48,7 +46,7 @@ export function CTASection() {
             >
               Start organizing now.
               <br />
-              <span className="bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-[#e5ff47] to-amber-400 bg-clip-text text-transparent">
                 It's free forever.
               </span>
             </motion.h2>
@@ -72,7 +70,7 @@ export function CTASection() {
             >
               <Link
                 to="/tool"
-                className="group w-full sm:w-auto flex items-center justify-center gap-2 px-8 sm:px-10 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 min-h-[56px]"
+                className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#e5ff47] to-amber-400 text-[#0a0a0a] font-semibold px-8 sm:px-10 py-4 min-h-[56px] shadow-lg hover:shadow-xl hover:from-amber-400 hover:to-[#e5ff47] transition-all duration-300 hover:-translate-y-0.5"
               >
                 <span>Get Started Free</span>
                 <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -82,12 +80,11 @@ export function CTASection() {
                 href="https://github.com/sumitagg24/bookmark-manager"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn-cta-secondary flex items-center justify-center gap-2 px-8 sm:px-10 py-4 min-h-[56px]"
+                className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full border-2 border-gray-600 bg-gray-800 text-gray-200 font-semibold px-8 sm:px-10 py-4 min-h-[56px] shadow-lg hover:shadow-xl hover:border-yellow-500 hover:text-yellow-300 transition-all duration-300 hover:-translate-y-0.5"
               >
                 <GithubIcon className="h-5 w-5" />
-                <span className="hidden sm:inline">Star on GitHub</span>
-                <span className="sm:hidden">GitHub</span>
-                <Heart className="h-4 w-4 text-red-400 fill-red-400" />
+                <span>Star on GitHub</span>
+                <Star className="h-4 w-4 text-yellow-500 fill-yellow-500 opacity-0 group-hover:opacity-100 transition-opacity" />
               </a>
             </motion.div>
 
@@ -99,7 +96,6 @@ export function CTASection() {
               className="mt-6 text-sm text-gray-500"
             >
               <span className="inline-flex items-center gap-1">
-                <Heart className="h-3 w-3 text-red-400 fill-red-400" />
                 Open source and maintained with passion
               </span>
             </motion.p>

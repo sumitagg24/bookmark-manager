@@ -12,6 +12,8 @@ import {
   findParentSlot,
   countBookmarksInTree,
   generateMergeNodeId,
+  moveNodeBefore as moveNodeBeforeUtil,
+  moveNodeAfter as moveNodeAfterUtil,
 } from '../core/treeEdit';
 import {
   loadSessionSnapshot,
@@ -212,7 +214,7 @@ shortcuts: new Map([
       });
     },
 
-    addMergeFolderAtRoot: () => {
+    addMergeFolderAtRoot: (afterId?: string) => {
       set((state) => {
         // If no mergeResult exists, create a default one
         if (!state.mergeResult) {
@@ -246,7 +248,17 @@ shortcuts: new Map([
           sourceFile: 'manual',
           children: [],
         };
-        root.children.push(newFolder);
+
+        if (afterId) {
+          const slot = findParentSlot(root, afterId);
+          if (slot && slot.parent === root) {
+            slot.parent.children!.splice(slot.index + 1, 0, newFolder);
+          } else {
+            root.children.push(newFolder);
+          }
+        } else {
+          root.children.push(newFolder);
+        }
 
         // Add to history
         state.history = state.history.slice(0, state.historyIndex + 1);
@@ -267,7 +279,7 @@ shortcuts: new Map([
       });
     },
 
-    addMergeBookmarkAtRoot: () => {
+    addMergeBookmarkAtRoot: (afterId?: string) => {
       set((state) => {
         // If no mergeResult exists, create a default one
         if (!state.mergeResult) {
@@ -301,7 +313,17 @@ shortcuts: new Map([
           url: 'https://',
           sourceFile: 'manual',
         };
-        root.children.push(newBookmark);
+
+        if (afterId) {
+          const slot = findParentSlot(root, afterId);
+          if (slot && slot.parent === root) {
+            slot.parent.children!.splice(slot.index + 1, 0, newBookmark);
+          } else {
+            root.children.push(newBookmark);
+          }
+        } else {
+          root.children.push(newBookmark);
+        }
 
         // Add to history
         state.history = state.history.slice(0, state.historyIndex + 1);
@@ -322,7 +344,7 @@ shortcuts: new Map([
       });
     },
 
-    addMergeFolderToFolder: (parentId: string) => {
+    addMergeFolderToFolder: (parentId: string, afterId?: string) => {
       set((state) => {
         const root = state.mergeResult?.root;
         if (!root) return;
@@ -336,7 +358,17 @@ shortcuts: new Map([
           sourceFile: 'manual',
           children: [],
         };
-        parent.children.push(newFolder);
+
+        if (afterId) {
+          const slot = findParentSlot(root, afterId);
+          if (slot && slot.parent.id === parent.id) {
+            slot.parent.children!.splice(slot.index + 1, 0, newFolder);
+          } else {
+            parent.children.push(newFolder);
+          }
+        } else {
+          parent.children.push(newFolder);
+        }
 
         // Add to history
         state.history = state.history.slice(0, state.historyIndex + 1);
@@ -359,7 +391,7 @@ shortcuts: new Map([
       });
     },
 
-    addMergeBookmarkToFolder: (parentId: string) => {
+    addMergeBookmarkToFolder: (parentId: string, afterId?: string) => {
       set((state) => {
         const root = state.mergeResult?.root;
         if (!root) return;
@@ -373,7 +405,17 @@ shortcuts: new Map([
           url: 'https://',
           sourceFile: 'manual',
         };
-        parent.children.push(newBookmark);
+
+        if (afterId) {
+          const slot = findParentSlot(root, afterId);
+          if (slot && slot.parent.id === parent.id) {
+            slot.parent.children!.splice(slot.index + 1, 0, newBookmark);
+          } else {
+            parent.children.push(newBookmark);
+          }
+        } else {
+          parent.children.push(newBookmark);
+        }
 
         // Add to history
         state.history = state.history.slice(0, state.historyIndex + 1);
@@ -452,23 +494,118 @@ shortcuts: new Map([
        });
      },
 
-     copyMarkdownToClipboard: async () => {
-      const { mergeResult } = get();
-      if (!mergeResult) return false;
-      const md = generateMarkdownExport(mergeResult.root);
-      try {
-        if (!navigator.clipboard?.writeText) {
-          // Clipboard API not available
-          return false;
-        }
-        await navigator.clipboard.writeText(md);
-        return true;
-      } catch {
-        return false;
-      }
-    },
+     moveNodeBefore: (nodeId: string, targetId: string) => {
+       set((state) => {
+         const root = state.mergeResult?.root;
+         if (!root) return;
+         const nodeToMove = findNodeById(root, nodeId);
+         const target = findNodeById(root, targetId);
+         if (!nodeToMove || !target || nodeId === targetId) return;
+         const oldSlot = findParentSlot(root, nodeId);
+         if (!oldSlot) return;
+         const oldParent = oldSlot.parent;
+         moveNodeBeforeUtil(root, nodeId, targetId);
+         state.history = state.history.slice(0, state.historyIndex + 1);
+         state.history.push({
+           type: 'move', timestamp: Date.now(), nodeId,
+           parentId: oldParent.id, oldParentId: oldParent.id,
+           description: `Moved "${nodeToMove.title}" before "${target.title}"`,
+         });
+         state.historyIndex++;
+         if (state.history.length > 20) { state.history = state.history.slice(-20); state.historyIndex = state.history.length - 1; }
+         state.mergeResult!.stats.uniqueBookmarks = countBookmarksInTree(root);
+       });
+     },
 
-    acceptSimilarBookmarks: (groupIndex: number) => {
+     moveNodeAfter: (nodeId: string, targetId: string) => {
+       set((state) => {
+         const root = state.mergeResult?.root;
+         if (!root) return;
+         const nodeToMove = findNodeById(root, nodeId);
+         const target = findNodeById(root, targetId);
+         if (!nodeToMove || !target || nodeId === targetId) return;
+         const oldSlot = findParentSlot(root, nodeId);
+         if (!oldSlot) return;
+         const oldParent = oldSlot.parent;
+         moveNodeAfterUtil(root, nodeId, targetId);
+         state.history = state.history.slice(0, state.historyIndex + 1);
+         state.history.push({
+           type: 'move', timestamp: Date.now(), nodeId,
+           parentId: oldParent.id, oldParentId: oldParent.id,
+           description: `Moved "${nodeToMove.title}" after "${target.title}"`,
+         });
+         state.historyIndex++;
+         if (state.history.length > 20) { state.history = state.history.slice(-20); state.historyIndex = state.history.length - 1; }
+         state.mergeResult!.stats.uniqueBookmarks = countBookmarksInTree(root);
+       });
+     },
+
+copyMarkdownToClipboard: async () => {
+       const { mergeResult } = get();
+       if (!mergeResult) return false;
+       const md = generateMarkdownExport(mergeResult.root);
+       try {
+         if (!navigator.clipboard?.writeText) {
+           // Clipboard API not available
+           return false;
+         }
+         await navigator.clipboard.writeText(md);
+         return true;
+       } catch {
+         return false;
+       }
+     },
+
+     removeBySourceFile: (sourceFile: string, parentId?: string) => {
+       let removed = 0;
+       set((state) => {
+         if (!state.mergeResult) return 0;
+         const root = state.mergeResult!.root;
+         const targetNode = parentId ? findNodeById(root, parentId) ?? root : root;
+         
+         function removeRecursive(node: BookmarkNode): BookmarkNode | null {
+           if (!node.children) return node.type === 'bookmark' ? null : node;
+           
+           const filteredChildren = node.children
+             .map(child => {
+               if (child.sourceFile === sourceFile) {
+                 removed++;
+                 return null;
+               }
+               if (child.type === 'folder') {
+                 return removeRecursive(child);
+               }
+               return child;
+             })
+             .filter((c): c is BookmarkNode => c !== null);
+           
+           return {
+             ...node,
+             children: filteredChildren,
+           };
+         }
+         
+         if (targetNode.type === 'root' || targetNode.type === 'folder') {
+           targetNode.children = targetNode.children
+             ?.map(child => {
+               if (child.sourceFile === sourceFile) {
+                 removed++;
+                 return null;
+               }
+               if (child.type === 'folder') {
+                 return removeRecursive(child);
+               }
+               return child;
+             })
+             .filter((c): c is BookmarkNode => c !== null) || [];
+         }
+         
+         state.mergeResult!.stats.uniqueBookmarks = countBookmarksInTree(root);
+       });
+       return removed;
+     },
+
+     acceptSimilarBookmarks: (groupIndex: number) => {
       set((state) => {
         if (!state.mergeResult || !state.mergeResult.similarBookmarks[groupIndex]) return;
         const group = state.mergeResult.similarBookmarks[groupIndex];

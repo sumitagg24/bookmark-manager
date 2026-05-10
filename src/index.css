@@ -9,116 +9,98 @@
   }
 
   body {
-    @apply bg-premium-canvas text-slate-900 antialiased;
-    @apply dark:bg-[#0c1218] dark:text-slate-100;
+    @apply bg-app-canvas text-app-navy antialiased;
+    @apply dark:bg-[#0b0f17] dark:text-slate-100;
+  }
+
+  ::selection {
+    @apply bg-app-accent/20 text-app-accent;
   }
 }
 
 @layer components {
-  /* Blink landing page utilities */
-  .blink-nav-pill {
-    @apply rounded-2xl sm:rounded-full backdrop-blur-xl border;
-    @apply bg-white/95 border-gray-200/80 shadow-lg;
-    @apply dark:bg-[rgba(20,20,20,0.85)] dark:border-white/10 dark:shadow-none;
-    @apply transition-shadow duration-300;
+  .app-card {
+    @apply rounded-3xl border border-app-border/60 bg-white shadow-card backdrop-blur-sm;
+    @apply dark:border-white/[0.06] dark:bg-[#131a2a]/95 dark:shadow-none;
+    @apply transition-all duration-200;
   }
 
-  .btn-nav-ghost {
-    @apply rounded-full px-3 sm:px-4 py-2 transition-all duration-200;
-    @apply text-gray-600 hover:text-gray-900 hover:bg-gray-100;
-    @apply dark:text-gray-300 dark:hover:text-white dark:hover:bg-white/10;
+  .app-card:hover {
+    @apply shadow-card-hover dark:border-white/[0.1];
   }
 
-  .btn-nav-primary {
-    @apply rounded-full bg-gradient-to-r from-[#e5ff47] to-amber-400 
-           text-[#0a0a0a] font-semibold 
-           hover:from-amber-400 hover:to-[#e5ff47] 
-           transition-all duration-200 
-           shadow-md hover:shadow-lg 
-           px-3 sm:px-6 py-2 sm:py-2.5
-           min-h-[44px];
-  }
-
-  .btn-cta-primary {
-    @apply rounded-full bg-gradient-to-r from-blue-600 to-cyan-600 
-           hover:from-blue-500 hover:to-cyan-500 
-           text-white font-semibold 
-           shadow-lg hover:shadow-xl 
-           transition-all duration-300 
-           hover:-translate-y-0.5
-           px-6 sm:px-8 py-4 sm:py-5
-           min-h-[56px];
-  }
-
-  .btn-cta-secondary {
-    @apply rounded-full border-2 
-           bg-gray-900 text-white border-gray-700
-           hover:border-gray-500 hover:bg-gray-800/80
-           transition-all duration-300
-           shadow-lg hover:shadow-xl
-           px-6 sm:px-8 py-4 sm:py-5
-           min-h-[56px];
-  }
-
-  .btn-cta-secondary:hover {
-    @apply border-gray-500;
-  }
-
-  /* Existing premium component styles for the app */
-  .premium-card {
-    @apply rounded-[28px] border border-white/80 bg-white/95 shadow-premium backdrop-blur-sm;
-    @apply dark:border-white/[0.06] dark:bg-[#151c26]/95 dark:shadow-none dark:ring-1 dark:ring-white/[0.05];
-  }
-
-  .glass-panel {
-    @apply premium-card;
-  }
-
-  .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-8 py-4 text-[15px] font-semibold tracking-wide text-white;
-    @apply bg-gradient-to-b from-premium-orange to-[#e84e1f] shadow-premium-btn shadow-premium-inset;
-    @apply transition-all duration-300 ease-out;
-    @apply hover:-translate-y-0.5 hover:from-premium-orange-hover hover:to-[#ff5c28] hover:shadow-lg;
+  .app-btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-3.5 text-[14px] font-semibold text-white;
+    @apply bg-gradient-to-b from-app-accent to-[#4338ca] shadow-btn;
+    @apply transition-all duration-200 ease-out;
+    @apply hover:-translate-y-0.5 hover:from-[#4338ca] hover:to-app-accent-hover hover:shadow-btn-hover;
     @apply active:translate-y-0 active:brightness-95;
-    @apply disabled:pointer-events-none disabled:translate-y-0 disabled:opacity-45 disabled:shadow-none;
-    @apply dark:from-orange-500 dark:to-orange-600 dark:hover:from-orange-400 dark:hover:to-orange-500;
+    @apply disabled:pointer-events-none disabled:translate-y-0 disabled:opacity-40 disabled:shadow-none;
   }
 
-  .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-2xl bg-slate-100 px-6 py-3.5 text-[14px] font-semibold text-slate-800;
-    @apply shadow-premium-sm transition-all duration-200 hover:bg-slate-200/90 hover:-translate-y-0.5;
-    @apply dark:bg-white/10 dark:text-white dark:hover:bg-white/15;
+  .app-btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-100 px-5 py-3 text-[13px] font-semibold text-app-navy;
+    @apply shadow-soft transition-all duration-200;
+    @apply hover:bg-slate-200/80 hover:-translate-y-0.5 hover:shadow-card;
+    @apply dark:bg-white/[0.08] dark:text-slate-200 dark:hover:bg-white/[0.12];
   }
 
-  .btn-outline-premium {
-    @apply inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-slate-200/90 bg-white px-6 py-3.5 text-[14px] font-semibold text-premium-navy;
-    @apply transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 hover:shadow-premium-sm;
-    @apply dark:border-white/15 dark:bg-transparent dark:text-white dark:hover:bg-white/5;
+  .app-btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-[13px] font-medium text-app-muted;
+    @apply transition-all duration-200;
+    @apply hover:bg-app-accent-soft hover:text-app-accent hover:scale-105;
+    @apply dark:hover:bg-app-accent/10;
   }
 
-  .premium-input {
-    @apply w-full rounded-2xl border-0 bg-slate-100/90 px-5 py-3.5 text-[15px] text-slate-900 placeholder:text-slate-400;
-    @apply shadow-inner shadow-white/20 outline-none ring-1 ring-slate-200/60 transition-shadow;
-    @apply focus:bg-white focus:ring-2 focus:ring-premium-orange/35 focus:ring-offset-0;
-    @apply dark:bg-white/[0.07] dark:text-white dark:placeholder:text-slate-500 dark:ring-white/10 dark:focus:ring-premium-orange/40;
+  .app-btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-[13px] font-medium;
+    @apply text-red-600 transition-all duration-200;
+    @apply hover:bg-red-50 hover:scale-105;
+    @apply dark:text-red-400 dark:hover:bg-red-950/30;
   }
-}
 
-/* Custom animations */
-@keyframes shine {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(200%); }
-}
+  .app-input {
+    @apply w-full rounded-2xl border-0 bg-slate-100/80 px-4 py-3 text-[14px] text-app-navy placeholder:text-slate-400;
+    @apply outline-none ring-1 ring-app-border/50 transition-all;
+    @apply focus:bg-white focus:ring-2 focus:ring-app-accent/25;
+    @apply dark:bg-white/[0.06] dark:text-white dark:placeholder:text-slate-500 dark:ring-white/[0.08] dark:focus:ring-app-accent/35;
+  }
 
-.animate-shine {
-  animation: shine 3s infinite;
-}
+  .app-badge {
+    @apply inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1 text-[11px] font-semibold;
+    @apply bg-app-accent-soft text-app-accent;
+    @apply dark:bg-app-accent/15 dark:text-blue-300;
+  }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-}
+  .app-section-title {
+    @apply flex items-center gap-2.5 text-base font-bold text-app-navy;
+    @apply dark:text-white;
+  }
 
-.animate-float {
-  animation: float 4s ease-in-out infinite;
+  .app-empty-state {
+    @apply flex flex-col items-center justify-center rounded-3xl border border-dashed border-app-border/60 bg-app-canvas/50 px-8 py-16 text-center;
+    @apply dark:border-white/[0.08] dark:bg-white/[0.02];
+  }
+
+  /* Backward compatibility - map old premium classes to new app classes */
+  .premium-card { @apply app-card; }
+  .glass-panel { @apply app-card; }
+  .btn-primary { @apply app-btn-primary; }
+  .btn-secondary { @apply app-btn-secondary; }
+  .btn-outline-premium { @apply app-btn-ghost border border-app-border/60; }
+  .premium-input { @apply app-input; }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 5px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-app-border;
+    @apply dark:bg-white/10;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-app-muted;
+  }
 }
