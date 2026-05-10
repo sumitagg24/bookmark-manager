@@ -5,7 +5,7 @@ import { HowItWorks } from '../components/landing/HowItWorks';
 import { Stats } from '../components/landing/Stats';
 import { Results } from '../components/landing/Results';
 import { TechStack } from '../components/landing/TechStack';
-import { Documentation } from '../components/landing/Documentation';
+import { Testimonials } from '../components/landing/Testimonials';
 import { CTASection } from '../components/landing/CTASection';
 import { Footer } from '../components/landing/Footer';
 
@@ -19,7 +19,7 @@ export function LandingPage() {
       <Stats />
       <Results />
       <TechStack />
-      <Documentation />
+      <Testimonials />
       <CTASection />
       <Footer />
     </div>
