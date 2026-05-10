@@ -1,9 +1,6 @@
 import { useCallback, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Library, Trash2, Menu, X, Upload, Star, BarChart3, Eye,
-  Tags, Download, LayoutDashboard
-} from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Library, Trash2, ArrowUpRight } from 'lucide-react';
 import { FileUpload } from './components/FileUpload';
 import { StatsPanel } from './components/StatsPanel';
 import { BookmarkTree } from './components/BookmarkTree';
@@ -11,6 +8,8 @@ import { ExportPanel } from './components/ExportPanel';
 import { DuplicateReport } from './components/DuplicateReport';
 import { SimilarBookmarksReport } from './components/SimilarBookmarksReport';
 import { AdvancedFeaturesPanel } from './components/AdvancedFeaturesPanel';
+import { DashboardNav } from './components/DashboardNav';
+import { PremiumSidebar } from './components/PremiumSidebar';
 import { ThemeToggle } from './components/ThemeToggle';
 import { TagsPanel } from './components/TagsPanel';
 import { SearchHistoryPanel } from './components/SearchHistoryPanel';
@@ -24,222 +23,178 @@ const scrollToSection = (id: string) => {
   el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 
-const navItems = [
-  { id: 'upload', label: 'Import', icon: Upload, desc: 'Upload bookmark files' },
-  { id: 'favorites', label: 'Favorites', icon: Star, desc: 'Starred bookmarks', requiresFiles: true },
-  { id: 'stats', label: 'Stats', icon: BarChart3, desc: 'Library insights', requiresFiles: true },
-  { id: 'preview', label: 'Preview', icon: Eye, desc: 'Browse & edit tree', requiresFiles: true },
-  { id: 'tags', label: 'Tags', icon: Tags, desc: 'Organize with tags', requiresFiles: true },
-  { id: 'export', label: 'Export', icon: Download, desc: 'Download results', requiresFiles: true },
-];
-
 function App() {
-  const { files, clearAll, error, mergeResult, sessionRestoredUi } =
+  const { files, clearAll, error, mergeResult, sessionRestoredUi, dismissSessionNotice } =
     useBookmarkStore();
   const [activeNav, setActiveNav] = useState('upload');
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const hasFiles = files.length > 0;
 
   const onNav = useCallback((id: string) => {
     setActiveNav(id);
-    setMobileMenuOpen(false);
     scrollToSection(id);
   }, []);
 
   return (
-    <div className="min-h-screen bg-app-canvas dark:bg-[#0b0f17]">
-      {/* Top Navigation Header */}
-      <header className="sticky top-0 z-50 border-b border-app-border/50 bg-white/90 backdrop-blur-xl dark:border-white/[0.06] dark:bg-[#0b0f17]/90">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2.5 sm:px-6 lg:px-8">
-          {/* Logo */}
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-app-accent to-[#6366f1] shadow-sm">
-              <Library className="h-5 w-5 text-white" strokeWidth={2} />
+    <div className="min-h-screen bg-premium-canvas dark:bg-[#0c1218]">
+      <div className="mx-auto flex max-w-[1440px] flex-col gap-5 px-4 py-5 md:flex-row md:gap-6 md:px-6 md:py-7 lg:px-8 lg:py-8">
+        <motion.aside
+          initial={{ opacity: 0, x: -12 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          className="premium-card flex h-auto w-full flex-row items-center justify-center gap-2 px-3 py-3 md:w-[84px] md:flex-col md:justify-start md:px-2 md:py-8"
+        >
+          <div className="mb-0 flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-premium-orange/15 to-transparent md:mb-6 md:h-12 md:w-12">
+            <Library className="h-6 w-6 text-premium-orange" strokeWidth={1.75} aria-hidden />
+          </div>
+          <DashboardNav activeId={activeNav} onSelect={onNav} hasFiles={hasFiles} />
+        </motion.aside>
+
+        <motion.main
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
+          className="premium-card min-w-0 flex-1 p-6 md:p-8 lg:p-10"
+        >
+          {/* Title row + theme switch (top-right, all breakpoints) */}
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between sm:gap-8">
+            <div className="max-w-xl flex-1 space-y-3">
+              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
+                Bookmark studio
+              </p>
+              <h1 className="text-3xl font-bold leading-[1.1] tracking-tight text-slate-900 dark:text-white md:text-4xl lg:text-[2.75rem]">
+                Merge, dedupe, and export{' '}
+                <span className="text-premium-orange">clean bookmarks</span>.
+              </h1>
+              <p className="text-[15px] leading-relaxed text-slate-500 dark:text-slate-400 md:text-base">
+                Drop HTML or JSON exports from any browser. We merge folders, remove duplicate URLs,
+                and let you edit before download.
+              </p>
+              <button
+                type="button"
+                onClick={() => onNav('upload')}
+                className="btn-outline-premium mt-2 w-fit"
+              >
+                Get started
+                <ArrowUpRight className="h-4 w-4" strokeWidth={2} aria-hidden />
+              </button>
             </div>
-            <span className="text-[17px] font-bold tracking-tight text-app-navy dark:text-white">
-              Bookmark<span className="text-app-accent">Hub</span>
-            </span>
+            <div className="flex shrink-0 flex-col items-end gap-2 sm:pt-1">
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">
+                Appearance
+              </p>
+              <ThemeToggle />
+            </div>
           </div>
 
-          {/* Desktop Nav */}
-          <nav className="hidden items-center gap-0.5 md:flex">
-            {navItems.map(item => {
-              if (item.requiresFiles && !hasFiles) return null;
-              const isActive = activeNav === item.id;
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => onNav(item.id)}
-                  title={item.desc}
-                  className={`flex items-center gap-2 rounded-2xl px-3.5 py-2 text-[13px] font-medium transition-all duration-200 ${
-                    isActive
-                      ? 'bg-app-accent-soft text-app-accent shadow-sm dark:bg-app-accent/15 dark:text-blue-300'
-                      : 'text-app-muted hover:bg-slate-100 hover:text-app-navy dark:text-slate-400 dark:hover:bg-white/[0.06] dark:hover:text-white'
-                  }`}
-                >
-                  <item.icon className="h-4 w-4" strokeWidth={1.75} />
-                  {item.label}
-                </button>
-              );
-            })}
-          </nav>
-
-          {/* Right actions */}
-          <div className="flex items-center gap-1.5">
-            <ThemeToggle />
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="flex p-2 text-app-muted hover:bg-slate-100 rounded-xl transition-colors md:hidden dark:hover:bg-white/[0.08]"
-              aria-label="Toggle menu"
-            >
-              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Navigation */}
-        <AnimatePresence>
-          {mobileMenuOpen && (
-            <motion.nav
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="border-t border-app-border/50 bg-white dark:border-white/[0.06] dark:bg-[#0b0f17] md:hidden"
-            >
-              <div className="flex flex-col gap-1 px-4 py-3">
-                {navItems.map(item => {
-                  if (item.requiresFiles && !hasFiles) return null;
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => onNav(item.id)}
-                      className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium transition-colors ${
-                        activeNav === item.id
-                          ? 'bg-app-accent-soft text-app-accent dark:bg-app-accent/15 dark:text-blue-300'
-                          : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-white/5'
-                      }`}
-                    >
-                      <item.icon className="h-4 w-4" strokeWidth={1.75} />
-                      <span>{item.label}</span>
-                      <span className="ml-auto text-[11px] text-slate-400 dark:text-slate-500">{item.desc}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </motion.nav>
-          )}
-        </AnimatePresence>
-      </header>
-
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-        <div className="space-y-8">
-          {/* Session notice */}
           {sessionRestoredUi && (
             <motion.div
-              initial={{ opacity: 0, y: -8 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              className="rounded-2xl border border-app-accent/20 bg-app-accent-soft/70 px-5 py-3.5 text-center dark:border-app-accent/20 dark:bg-app-accent/8"
+              className="mt-6 flex flex-col gap-3 rounded-2xl border border-cyan-200/80 bg-cyan-50/90 px-4 py-3 sm:flex-row sm:items-center sm:justify-between dark:border-cyan-900/40 dark:bg-cyan-950/25"
+              role="status"
             >
-              <p className="text-[13px] font-medium text-app-accent dark:text-blue-300">
-                Session restored from local storage
+              <p className="text-[13px] font-medium text-premium-navy dark:text-cyan-100">
+                Your last session was restored from this browser (imports + merged preview).
               </p>
+              <button
+                type="button"
+                onClick={dismissSessionNotice}
+                className="btn-secondary shrink-0 py-2 text-[13px]"
+              >
+                Dismiss
+              </button>
             </motion.div>
           )}
 
-          {/* Error */}
           {error && (
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="rounded-2xl border border-red-200/80 bg-red-50 px-5 py-4 text-center text-[14px] font-medium text-red-700 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-300"
+              className="mt-8 rounded-2xl border border-red-200/80 bg-red-50 px-5 py-4 text-center text-[14px] font-medium text-red-800 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-200"
+              role="alert"
             >
               {error}
             </motion.div>
           )}
 
-          {/* Section: Upload */}
-          <section id="section-upload" className="scroll-mt-24 space-y-5">
-            <FileUpload />
+          <div className="mt-10 space-y-8 md:mt-12 md:space-y-10">
+            <section id="section-upload" className="scroll-mt-28 space-y-5">
+              <FileUpload />
+              {hasFiles && (
+                <motion.button
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  type="button"
+                  onClick={clearAll}
+                  className="btn-outline-premium w-full border-red-200/90 text-red-700 hover:border-red-300 hover:bg-red-50 dark:border-red-900/50 dark:text-red-300 dark:hover:bg-red-950/20"
+                >
+                  <Trash2 className="h-4 w-4" aria-hidden />
+                  Clear all files
+                </motion.button>
+              )}
+            </section>
+
             {hasFiles && (
-              <button
-                type="button"
-                onClick={clearAll}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-200/70 bg-white/60 px-6 py-3 text-[13px] font-semibold text-red-600 transition-all hover:border-red-300 hover:bg-red-50 hover:shadow-sm dark:border-red-900/40 dark:bg-transparent dark:text-red-400 dark:hover:bg-red-950/20"
-              >
-                <Trash2 className="h-4 w-4" />
-                Clear all files
-              </button>
+              <>
+                <section id="section-favorites" className="scroll-mt-28">
+                  <FavoritesPanel />
+                </section>
+                <section id="section-stats" className="scroll-mt-28">
+                  <StatsPanel mergeResult={mergeResult} />
+                </section>
+                <DuplicateReport />
+                <SimilarBookmarksReport />
+                <section id="section-preview" className="scroll-mt-28">
+                  <BookmarkTree />
+                </section>
+                <section id="section-tags" className="scroll-mt-28">
+                  <TagsPanel />
+                </section>
+                <section id="section-search-history" className="scroll-mt-28">
+                  <SearchHistoryPanel />
+                </section>
+                <AdvancedFeaturesPanel />
+                <section id="section-backup" className="scroll-mt-28">
+                  <BackupRestorePanel />
+                </section>
+                <section id="section-export" className="scroll-mt-28">
+                  <ExportPanel />
+                </section>
+              </>
             )}
-          </section>
 
-          {hasFiles && (
-            <div className="space-y-8">
-              {/* Favorites */}
-              <section id="section-favorites" className="scroll-mt-24">
-                <FavoritesPanel />
-              </section>
+            {!hasFiles && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="premium-card border-dashed border-slate-200/80 bg-slate-50/50 px-8 py-16 text-center dark:border-white/10 dark:bg-white/[0.03]"
+              >
+                <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-3xl bg-white shadow-premium-sm dark:bg-white/10">
+                  <Library className="h-8 w-8 text-premium-orange" strokeWidth={1.5} aria-hidden />
+                </div>
+                <p className="text-xl font-bold text-slate-900 dark:text-white">No files yet</p>
+                <p className="mx-auto mt-2 max-w-sm text-[15px] text-slate-500 dark:text-slate-400">
+                  Import bookmark exports above to see your merged library, stats, and export options.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => onNav('upload')}
+                  className="btn-primary mx-auto mt-6"
+                >
+                  Go to import
+                </button>
+              </motion.div>
+            )}
+          </div>
 
-              {/* Stats */}
-              <section id="section-stats" className="scroll-mt-24">
-                <StatsPanel mergeResult={mergeResult} />
-              </section>
+          <footer className="mt-12 border-t border-slate-100 pt-8 text-center text-[12px] text-slate-400 dark:border-white/10 dark:text-slate-500">
+            <p>Processing stays in your browser — no uploads, no accounts.</p>
+          </footer>
+        </motion.main>
 
-              {/* Duplicate & Similar Reports */}
-              <DuplicateReport />
-              <SimilarBookmarksReport />
-
-              {/* Preview / Tree */}
-              <section id="section-preview" className="scroll-mt-24">
-                <BookmarkTree />
-              </section>
-
-              {/* Tags */}
-              <section id="section-tags" className="scroll-mt-24">
-                <TagsPanel />
-              </section>
-
-              {/* Search History */}
-              <section id="section-search-history" className="scroll-mt-24">
-                <SearchHistoryPanel />
-              </section>
-
-              {/* Advanced Features */}
-              <AdvancedFeaturesPanel />
-
-              {/* Backup */}
-              <section id="section-backup" className="scroll-mt-24">
-                <BackupRestorePanel />
-              </section>
-
-              {/* Export */}
-              <section id="section-export" className="scroll-mt-24">
-                <ExportPanel />
-              </section>
-            </div>
-          )}
-
-          {/* Empty state */}
-          {!hasFiles && (
-            <div className="app-empty-state">
-              <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-app-accent/10 to-app-accent/5 shadow-soft ring-1 ring-app-accent/15 dark:from-app-accent/15 dark:to-app-accent/5">
-                <LayoutDashboard className="h-8 w-8 text-app-accent" strokeWidth={1.5} />
-              </div>
-              <p className="text-xl font-bold text-app-navy dark:text-white">No files loaded</p>
-              <p className="mx-auto mt-2 max-w-sm text-[14px] text-app-muted dark:text-slate-400">
-                Import HTML or JSON bookmark exports to merge, deduplicate, and organize your bookmarks.
-              </p>
-            </div>
-          )}
-        </div>
-
-        <footer className="mt-12 border-t border-app-border/50 pt-6 text-center text-[12px] text-app-muted dark:border-white/[0.06] dark:text-slate-500">
-          <p>100% client-side — nothing leaves your browser.</p>
-        </footer>
-      </main>
-      <OnboardingGuide hasFiles={hasFiles} onClose={() => {}} />
+        <PremiumSidebar hasFiles={hasFiles} mergeResult={mergeResult} />
+        <OnboardingGuide hasFiles={hasFiles} onClose={() => {}} />
+      </div>
     </div>
   );
 }
