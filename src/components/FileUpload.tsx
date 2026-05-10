@@ -44,7 +44,7 @@ export const FileUpload: React.FC = () => {
            ${
              isDragActive
                ? 'border-premium-orange/60 bg-premium-orange-soft shadow-premium-sm dark:border-premium-orange dark:bg-premium-orange/10'
-               : 'border-slate-200/90 bg-premium-mist/80 hover:border-premium-orange/35 hover:shadow-premium-sm dark:border-white/10 dark:bg-white/[0.04] dark:hover:border-premium-orange/40'
+                : 'border-slate-200/90 bg-app-canvas/60 hover:border-app-accent/35 hover:shadow-sm dark:border-white/10 dark:bg-white/[0.04] dark:hover:border-app-accent/40'
            }
            ${isProcessing ? 'cursor-not-allowed opacity-50' : ''}
          `}

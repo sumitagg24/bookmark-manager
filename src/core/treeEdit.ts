@@ -72,3 +72,112 @@ export function moveNode(root: BookmarkNode, nodeId: string, newParentId: string
   
   return true;
 }
+
+export function moveNodeBefore(root: BookmarkNode, nodeId: string, targetId: string): boolean {
+  const nodeToMove = findNodeById(root, nodeId);
+  const target = findNodeById(root, targetId);
+  if (!nodeToMove || !target || nodeToMove.type === 'root' || nodeId === targetId) return false;
+
+  // Prevent moving into own descendant
+  let current: BookmarkNode | null = target;
+  while (current) {
+    if (current.id === nodeId) return false;
+    const parentSlot = findParentSlot(root, current.id);
+    current = parentSlot?.parent || null;
+  }
+
+  const oldSlot = findParentSlot(root, nodeId);
+  const targetSlot = findParentSlot(root, targetId);
+  if (!oldSlot || !targetSlot) return false;
+
+  // Remove from old parent
+  oldSlot.parent.children?.splice(oldSlot.index, 1);
+
+  // Find target again (indices may have shifted after removal)
+  const newTargetSlot = findParentSlot(root, targetId);
+  if (!newTargetSlot) return false;
+
+  const insertIndex = newTargetSlot.index;
+  if (!newTargetSlot.parent.children) newTargetSlot.parent.children = [];
+  newTargetSlot.parent.children.splice(insertIndex, 0, nodeToMove);
+  return true;
+}
+
+export function moveNodeAfter(root: BookmarkNode, nodeId: string, targetId: string): boolean {
+  const nodeToMove = findNodeById(root, nodeId);
+  const target = findNodeById(root, targetId);
+  if (!nodeToMove || !target || nodeToMove.type === 'root' || nodeId === targetId) return false;
+
+  // Prevent moving into own descendant
+  let current: BookmarkNode | null = target;
+  while (current) {
+    if (current.id === nodeId) return false;
+    const parentSlot = findParentSlot(root, current.id);
+    current = parentSlot?.parent || null;
+  }
+
+  const oldSlot = findParentSlot(root, nodeId);
+  const targetSlot = findParentSlot(root, targetId);
+  if (!oldSlot || !targetSlot) return false;
+
+  // Remove from old parent
+  oldSlot.parent.children?.splice(oldSlot.index, 1);
+
+  // Find target again (indices may have shifted)
+  const newTargetSlot = findParentSlot(root, targetId);
+  if (!newTargetSlot) return false;
+
+  const insertIndex = newTargetSlot.index + 1;
+  if (!newTargetSlot.parent.children) newTargetSlot.parent.children = [];
+  newTargetSlot.parent.children.splice(insertIndex, 0, nodeToMove);
+  return true;
+}
+
+export function removeBySourceFile(
+  root: BookmarkNode, 
+  sourceFile: string, 
+  parentId?: string
+): number {
+  let removedCount = 0;
+  const targetNode = parentId ? findNodeById(root, parentId) ?? root : root;
+  
+  function removeRecursive(node: BookmarkNode): BookmarkNode | null {
+    if (!node.children) return node.type === 'bookmark' ? null : node;
+    
+    const filteredChildren = node.children
+      .map(child => {
+        if (child.sourceFile === sourceFile) {
+          removedCount++;
+          return null;
+        }
+        if (child.type === 'folder') {
+          return removeRecursive(child);
+        }
+        return child;
+      })
+      .filter((c): c is BookmarkNode => c !== null);
+    
+    return {
+      ...node,
+      children: filteredChildren,
+    };
+  }
+  
+  // Apply removal starting from target node
+  if (targetNode.type === 'root' || targetNode.type === 'folder') {
+    targetNode.children = targetNode.children
+      ?.map(child => {
+        if (child.sourceFile === sourceFile) {
+          removedCount++;
+          return null;
+        }
+        if (child.type === 'folder') {
+          return removeRecursive(child);
+        }
+        return child;
+      })
+      .filter((c): c is BookmarkNode => c !== null) || [];
+  }
+  
+  return removedCount;
+}
