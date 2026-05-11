@@ -7,7 +7,7 @@ export function ToolPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-premium-canvas dark:bg-[#0c1218]">
+    <div className="min-h-screen bg-app-canvas dark:bg-[#0b0f17]">
       <motion.button
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

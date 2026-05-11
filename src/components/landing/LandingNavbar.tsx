@@ -1,7 +1,7 @@
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useState } from 'react';
 import { Library } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ThemeToggle } from '../ThemeToggle';
 
 // Simple GitHub icon component
@@ -33,7 +33,9 @@ function XIcon({ className }: { className?: string }) {
 
 export function LandingNavbar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const isToolPage = location.pathname.startsWith('/tool');
+  const isLandingPage = location.pathname === '/';
   const { scrollY } = useScroll();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -42,9 +44,19 @@ export function LandingNavbar() {
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (href.startsWith('#')) {
       e.preventDefault();
-      const element = document.querySelector(href);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (isLandingPage) {
+        const element = document.querySelector(href);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      } else {
+        navigate('/');
+        setTimeout(() => {
+          const element = document.querySelector(href);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 100);
       }
       setMobileMenuOpen(false);
     }
@@ -53,7 +65,8 @@ export function LandingNavbar() {
   const navLinks = [
     { label: 'Features', href: '#features' },
     { label: 'How it Works', href: '#how-it-works' },
-    { label: 'Open Source', href: '#open-source' },
+    { label: 'Docs', href: '#documentation' },
+    { label: 'Open Source', href: 'https://github.com/sumitagg24/bookmark-manager' },
   ];
 
   return (
@@ -81,14 +94,26 @@ export function LandingNavbar() {
         {/* Desktop Navigation */}
         <div className="hidden lg:flex items-center gap-6">
           {navLinks.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              onClick={(e) => handleNavClick(e, link.href)}
-              className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-            >
-              {link.label}
-            </a>
+            link.href.startsWith('http') ? (
+              <a
+                key={link.href}
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+              >
+                {link.label}
+              </a>
+            ) : (
+              <a
+                key={link.href}
+                href={link.href}
+                onClick={(e) => handleNavClick(e, link.href)}
+                className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+              >
+                {link.label}
+              </a>
+            )
           ))}
         </div>
 
@@ -126,16 +151,60 @@ export function LandingNavbar() {
 
           {/* CTA Button */}
           {isToolPage ? (
-            <span className="btn-nav-primary hidden sm:flex cursor-default items-center gap-2 text-sm px-4 py-2.5 min-h-[44px]">
-              Tool Active
-            </span>
-          ) : (
-            <Link 
-              to="/tool" 
-              className="btn-nav-primary hidden sm:flex items-center gap-2 text-sm px-4 py-2.5 min-h-[44px]"
+            <motion.span
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="hidden sm:flex cursor-default items-center gap-2 text-sm px-5 py-2.5 min-h-[44px] rounded-full bg-gradient-to-r from-[#e5ff47]/80 to-amber-400/80 text-gray-900 font-semibold shadow-sm"
             >
-              <span>Open Tool</span>
-            </Link>
+              Tool Active
+            </motion.span>
+          ) : (
+            <motion.div
+              className="hidden sm:block"
+              initial={{ opacity: 0, scale: 0.85 }}
+              animate={{ 
+                opacity: 1, 
+                scale: 1,
+                y: [0, -2, 0],
+              }}
+              transition={{ 
+                opacity: { duration: 0.3 },
+                scale: { duration: 0.3 },
+                y: { duration: 3, repeat: Infinity, ease: 'easeInOut' },
+              }}
+            >
+              <motion.div
+                animate={{ 
+                  boxShadow: [
+                    '0 0 0 0 rgba(229,255,71,0.5)',
+                    '0 0 0 10px rgba(229,255,71,0)',
+                    '0 0 0 0 rgba(229,255,71,0.5)',
+                  ],
+                }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                className="rounded-full"
+              >
+                <Link 
+                  to="/tool" 
+                  className="flex items-center gap-2 text-sm px-5 py-2.5 min-h-[44px] rounded-full bg-gradient-to-r from-[#e5ff47] to-amber-400 text-gray-900 font-semibold shadow-lg"
+                >
+                  <motion.span
+                    animate={{ rotate: [0, 5, -5, 0] }}
+                    transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+                  >
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+                    </svg>
+                  </motion.span>
+                  <motion.span
+                    animate={{ opacity: [1, 0.7, 1] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                  >
+                    Open Tool
+                  </motion.span>
+                </Link>
+              </motion.div>
+            </motion.div>
           )}
         </div>
       </motion.div>
@@ -151,27 +220,45 @@ export function LandingNavbar() {
           <div className="blink-nav-pill p-4 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-xl">
             <nav className="flex flex-col gap-2">
               {navLinks.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  onClick={(e) => handleNavClick(e, link.href)}
-                  className="px-4 py-3 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors font-medium"
-                >
-                  {link.label}
-                </a>
+                link.href.startsWith('http') ? (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-3 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors font-medium"
+                  >
+                    {link.label}
+                  </a>
+                ) : (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    onClick={(e) => handleNavClick(e, link.href)}
+                    className="px-4 py-3 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors font-medium"
+                  >
+                    {link.label}
+                  </a>
+                )
               ))}
               <div className="border-t border-gray-200 dark:border-gray-700 my-2" />
               <div className="flex items-center justify-between px-4 py-2">
                 <span className="text-sm text-gray-600 dark:text-gray-400">Theme</span>
                 <ThemeToggle />
               </div>
-              <Link
-                to="/tool"
-                onClick={() => setMobileMenuOpen(false)}
-                className="btn-cta-primary flex items-center justify-center gap-2 mt-2"
+              <motion.div
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                className="mt-2"
               >
-                Open Bookmark Manager
-              </Link>
+                <Link
+                  to="/tool"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-[#e5ff47] to-amber-400 text-gray-900 font-semibold shadow-lg"
+                >
+                  Open Bookmark Manager
+                </Link>
+              </motion.div>
             </nav>
           </div>
         </motion.div>
